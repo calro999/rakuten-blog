@@ -142,37 +142,39 @@ class RakutenBlogAPI:
                     print("HTML editor textarea is already visible. Skipping mode toggle.")
                 else:
                     print("Ensuring HTML editor mode (unchecking '見たまま編集')...")
-                    # Check for the mitamama checkbox
-                    mitamama_checkbox = page.locator('input[name="mitamama"], input#mitamama').first
-                    if mitamama_checkbox.is_visible(timeout=3000):
-                        is_checked = mitamama_checkbox.is_checked()
-                        print(f"'見たまま編集' checkbox checked status: {is_checked}")
-                        if is_checked:
-                            print("Unchecking '見たまま編集' checkbox to enable HTML mode...")
-                            page.evaluate('window.confirm = () => true;')
-                            mitamama_checkbox.click(force=True)
-                            time.sleep(3)
-                    else:
-                        print("Mitamama checkbox not found. Trying fallback toggle...")
-                        try:
-                            result = page.evaluate('''() => {
-                                window.confirm = () => true;
-                                window.alert = () => true;
-                                const elements = document.querySelectorAll('button, a, span, label, input[type="button"]');
-                                for (let el of elements) {
-                                    const text = el.textContent || el.value || "";
-                                    if (text.includes("見たまま") || text.includes("HTML編集")) {
-                                        el.click();
-                                        return "element_clicked";
-                                    }
+                    try:
+                        result = page.evaluate('''() => {
+                            window.confirm = () => true;
+                            window.alert = () => true;
+                            
+                            // Try finding checkbox by name/id
+                            const cb = document.querySelector('input[name="mitamama"], input#mitamama, input[type="checkbox"]');
+                            if (cb) {
+                                if (cb.checked) {
+                                    cb.checked = false;
+                                    cb.dispatchEvent(new Event('click', { bubbles: true }));
+                                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                                    return "checkbox_unchecked_via_js";
                                 }
-                                return "not_found";
-                            }''')
-                            print(f"Fallback toggle result: {result}")
-                            if "clicked" in result:
-                                time.sleep(3)
-                        except Exception as e:
-                            print(f"Warning: Fallback toggle failed: {e}")
+                                return "checkbox_already_unchecked";
+                            }
+                            
+                            // Fallback toggle via elements
+                            const elements = document.querySelectorAll('button, a, span, label, input[type="button"]');
+                            for (let el of elements) {
+                                const text = el.textContent || el.value || "";
+                                if (text.includes("見たまま") || text.includes("HTML編集")) {
+                                    el.click();
+                                    return "element_clicked";
+                                }
+                            }
+                            return "not_found";
+                        }''')
+                        print(f"Editor mode toggle result: {result}")
+                        if "unchecked" in result or "clicked" in result:
+                            time.sleep(3)
+                    except Exception as e:
+                        print(f"Warning: Failed to toggle editor mode: {e}")
 
                 # Wait for textarea to be visible
                 try:
