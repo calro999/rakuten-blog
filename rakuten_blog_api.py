@@ -87,12 +87,10 @@ class RakutenBlogAPI:
                 page = context.new_page()
                 page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
-                write_url = ""
-                if self.blog_id:
-                    write_url = f"https://plaza.rakuten.co.jp/{self.blog_id}/diary/write/"
-                    print(f"Attempting direct navigation to: {write_url}")
-                    page.goto(write_url, wait_until="domcontentloaded", timeout=30000)
-                    time.sleep(5)
+                write_url = "https://my.plaza.rakuten.co.jp/diary/write/"
+                print(f"Attempting direct navigation to: {write_url}")
+                page.goto(write_url, wait_until="domcontentloaded", timeout=30000)
+                time.sleep(5)
                 
                 # If direct page was not successful, or if blog_id was empty, try to resolve via homepage
                 current_url = page.url
