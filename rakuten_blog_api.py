@@ -50,6 +50,19 @@ class RakutenBlogAPI:
         except Exception as e:
             print(f"Warning: Failed to save screenshot {path}: {e}")
 
+    def _remove_overlays(self, page):
+        """Removes common popups/ad overlays that might block clicking other elements."""
+        try:
+            page.evaluate('''() => {
+                const selectors = ["#interstitial-popup", ".popup", "[id*='popup']", "[class*='popup']", ".modal", ".overlay", ".interstitial"];
+                selectors.forEach(sel => {
+                    document.querySelectorAll(sel).forEach(el => el.remove());
+                });
+            }''')
+            print("Removed popup/ad overlays if present.")
+        except Exception as e:
+            print(f"Warning: Failed to remove overlays: {e}")
+
     def post_entry(self, title: str, html_content: str) -> bool:
         """Posts a blog entry to Rakuten Blog using Playwright."""
         session_path = self._prepare_session_file()
@@ -87,6 +100,7 @@ class RakutenBlogAPI:
                     print("Direct URL failed, empty, or redirected. Trying dynamic link resolution via Rakuten Blog homepage...")
                     page.goto("https://plaza.rakuten.co.jp/", wait_until="domcontentloaded", timeout=30000)
                     time.sleep(5)
+                    self._remove_overlays(page)
                     
                     # Check if login button is present (indicates we're not logged in)
                     login_btn = page.locator('a:has-text("ログイン"), .login').first
@@ -99,18 +113,19 @@ class RakutenBlogAPI:
                     write_link = page.locator('a[href*="diary/write"], a:has-text("日記を書く")').first
                     if write_link.is_visible(timeout=3000):
                         print("Found '日記を書く' link. Clicking...")
-                        write_link.click()
+                        write_link.click(force=True)
                         time.sleep(5)
                     else:
                         manage_link = page.locator('a[href*="main"], a:has-text("管理ページ"), a:has-text("ブログ管理")').first
                         if manage_link.is_visible(timeout=3000):
                             print("Found 'ブログ管理' link. Clicking...")
-                            manage_link.click()
+                            manage_link.click(force=True)
                             time.sleep(5)
+                            self._remove_overlays(page)
                             # Now try to find "日記を書く" on the manage page
                             sub_write_link = page.locator('a[href*="diary/write"], a:has-text("日記を書く")').first
                             if sub_write_link.is_visible(timeout=3000):
-                                sub_write_link.click()
+                                sub_write_link.click(force=True)
                                 time.sleep(5)
 
                 current_url = page.url
@@ -195,6 +210,7 @@ class RakutenBlogAPI:
 
                 # Submit the post
                 print("Clicking submit/preview button...")
+                self._remove_overlays(page)
                 submit_selectors = [
                     'input[type="submit"][value*="確認"]',
                     'input[type="submit"][value*="登録"]',
@@ -213,7 +229,7 @@ class RakutenBlogAPI:
                         if btn.is_visible(timeout=2000):
                             btn.scroll_into_view_if_needed()
                             time.sleep(1)
-                            btn.click()
+                            btn.click(force=True)
                             print(f"Clicked submit button with selector: {selector}")
                             submitted = True
                             break
@@ -230,6 +246,7 @@ class RakutenBlogAPI:
                 # Handle confirmation step if applicable
                 current_url = page.url
                 print(f"Current page URL after click: {current_url}")
+                self._remove_overlays(page)
                 
                 confirm_selectors = [
                     'input[type="submit"][value*="掲載"]',
@@ -247,7 +264,7 @@ class RakutenBlogAPI:
                             print(f"Found confirmation button: {selector}. Clicking to publish...")
                             btn.scroll_into_view_if_needed()
                             time.sleep(1)
-                            btn.click()
+                            btn.click(force=True)
                             time.sleep(5)
                             break
                     except Exception:

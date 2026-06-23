@@ -99,6 +99,14 @@ def fetch_rakuten_items(app_id: str, access_key: str, affiliate_id: str, keyword
                         "imageUrl": image_url
                     })
             return items
+    except urllib.error.HTTPError as e:
+        try:
+            error_body = e.read().decode("utf-8")
+            print(f"Failed to fetch from Rakuten Ichiba API (HTTPError): {e}")
+            print(f"Error Response Body: {error_body}")
+        except Exception:
+            print(f"Failed to fetch from Rakuten Ichiba API (HTTPError): {e}")
+        return []
     except Exception as e:
         print(f"Failed to fetch from Rakuten Ichiba API: {e}")
         return []
