@@ -135,6 +135,28 @@ class RakutenBlogAPI:
                     self._safe_screenshot(page, "navigation_error.png")
                     return False
 
+                print("Checking/unchecking visual editor mode...")
+                try:
+                    unchecked = page.evaluate('''() => {
+                        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                        for (let cb of checkboxes) {
+                            const labelText = cb.labels ? Array.from(cb.labels).map(l => l.textContent).join('') : '';
+                            const parentText = cb.parentElement ? cb.parentElement.textContent : '';
+                            if (labelText.includes("見たまま") || parentText.includes("見たまま") || cb.id.includes("mitamama") || cb.name.includes("mitamama")) {
+                                if (cb.checked) {
+                                    cb.click();
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }''')
+                    if unchecked:
+                        print("Successfully switched to HTML editor mode (unchecked '見たまま編集').")
+                        time.sleep(2)
+                except Exception as e:
+                    print(f"Warning: Failed to toggle editor mode: {e}")
+
                 print("Filling title...")
                 title_filled = False
                 title_selectors = [

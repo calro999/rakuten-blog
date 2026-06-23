@@ -315,6 +315,14 @@ def main():
 
     print(f"Target Item: {target_item['title']} (Code: {target_item['itemCode']})")
 
+    # アフィリエイトIDをURL内に強制適用して確実にする
+    affiliate_url = target_item["affiliateUrl"]
+    if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
+        # hb.afl.rakuten.co.jp/hgc/xxxx/ の xxxx 部分をご自身のIDに差し替える
+        pattern = r'(hb\.afl\.rakuten\.co\.jp/hgc/)[^/]+(/)'
+        affiliate_url = re.sub(pattern, rf'\1{rakuten_affiliate_id}\2', affiliate_url)
+        print(f"Surgically applied your Affiliate ID: {rakuten_affiliate_id}")
+
     # 5. LLMで紹介記事（HTML形式）を生成
     print("Generating Review Article...")
     article_gen = ArticleGenerator()
@@ -341,7 +349,7 @@ def main():
     
     cta_html = f"""
 <div style="text-align: center; margin: 40px 0 20px 0;">
-    <a href="{target_item['affiliateUrl']}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #8E6E53; color: #fff; padding: 16px 32px; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 15px rgba(142,110,83,0.3); text-align: center;">
+    <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #8E6E53; color: #fff; padding: 16px 32px; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 15px rgba(142,110,83,0.3); text-align: center;">
         ＼ 楽天市場で詳細をチェックする ／
     </a>
 </div>
