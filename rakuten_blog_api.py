@@ -135,43 +135,47 @@ class RakutenBlogAPI:
                     self._safe_screenshot(page, "navigation_error.png")
                     return False
 
-                print("Checking/unchecking visual editor mode...")
-                try:
-                    result = page.evaluate('''() => {
-                        window.confirm = () => true;
-                        window.alert = () => true;
-                        
-                        // 1. Checkboxes
-                        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                        for (let cb of checkboxes) {
-                            const labelText = cb.labels ? Array.from(cb.labels).map(l => l.textContent).join('') : '';
-                            const parentText = cb.parentElement ? cb.parentElement.textContent : '';
-                            if (labelText.includes("見たまま") || parentText.includes("見たまま") || cb.id.includes("mitamama") || cb.name.includes("mitamama")) {
-                                if (cb.checked) {
-                                    cb.click();
-                                    return "checkbox_unchecked";
-                                }
-                                return "checkbox_already_unchecked";
-                            }
-                        }
-                        
-                        // 2. Buttons/labels/tabs
-                        const elements = document.querySelectorAll('button, a, span, label, input[type="button"]');
-                        for (let el of elements) {
-                            const text = el.textContent || el.value || "";
-                            if (text.includes("見たまま") || text.includes("HTML編集")) {
-                                el.click();
-                                return "element_clicked";
-                            }
-                        }
-                        return "not_found";
-                    }''')
-                    print(f"Editor mode toggle result: {result}")
-                    if "unchecked" in result or "clicked" in result:
-                        print("Switched editor mode. Waiting for reload...")
+                print("Ensuring HTML editor mode (unchecking '見たまま編集')...")
+                textarea = page.locator('textarea#diaryBody, textarea[name="body"]').first
+                
+                # Check for the mitamama checkbox
+                mitamama_checkbox = page.locator('input[name="mitamama"], input#mitamama').first
+                if mitamama_checkbox.is_visible(timeout=3000):
+                    is_checked = mitamama_checkbox.is_checked()
+                    print(f"'見たまま編集' checkbox checked status: {is_checked}")
+                    if is_checked:
+                        print("Unchecking '見たまま編集' checkbox to enable HTML mode...")
+                        page.evaluate('window.confirm = () => true;')
+                        mitamama_checkbox.click(force=True)
                         time.sleep(3)
+                else:
+                    print("Mitamama checkbox not found. Trying fallback toggle...")
+                    try:
+                        result = page.evaluate('''() => {
+                            window.confirm = () => true;
+                            window.alert = () => true;
+                            const elements = document.querySelectorAll('button, a, span, label, input[type="button"]');
+                            for (let el of elements) {
+                                const text = el.textContent || el.value || "";
+                                if (text.includes("見たまま") || text.includes("HTML編集")) {
+                                    el.click();
+                                    return "element_clicked";
+                                }
+                            }
+                            return "not_found";
+                        }''')
+                        print(f"Fallback toggle result: {result}")
+                        if "clicked" in result:
+                            time.sleep(3)
+                    except Exception as e:
+                        print(f"Warning: Fallback toggle failed: {e}")
+
+                # Wait for textarea to be visible
+                try:
+                    textarea.wait_for(state="visible", timeout=10000)
+                    print("HTML editor textarea is now visible.")
                 except Exception as e:
-                    print(f"Warning: Failed to toggle editor mode: {e}")
+                    print(f"Warning: HTML editor textarea did not become visible: {e}")
 
                 print("Filling title...")
                 title_filled = False
@@ -204,42 +208,34 @@ class RakutenBlogAPI:
                             print("Filled title in the first visible text input.")
                             break
 
-                print("Filling body content...")
+                print("Filling body content into textarea...")
                 body_filled = False
-                body_selectors = [
-                    'textarea[name="body"]',
-                    'textarea#diaryBody',
-                    'textarea[id*="body"]',
-                    'textarea[placeholder*="本文"]',
-                    'textarea'
-                ]
-                for selector in body_selectors:
-                    try:
-                        element = page.locator(selector).first
-                        if element.is_visible(timeout=2000):
-                            element.fill(html_content)
-                            body_filled = True
-                            print(f"Filled body using selector: {selector}")
-                            break
-                    except Exception:
-                        continue
-
-                if not body_filled:
-                    print("Searching for rich editor frames...")
-                    frames = page.frames
-                    for frame in frames:
+                if textarea.is_visible(timeout=3000):
+                    textarea.fill(html_content)
+                    body_filled = True
+                    print("Successfully filled body in HTML editor.")
+                else:
+                    # Fallback to other body textarea selectors just in case name/id changed
+                    body_selectors = [
+                        'textarea[name="body"]',
+                        'textarea#diaryBody',
+                        'textarea[id*="body"]',
+                        'textarea[placeholder*="本文"]',
+                        'textarea'
+                    ]
+                    for selector in body_selectors:
                         try:
-                            body_el = frame.locator('body')
-                            if body_el.is_visible(timeout=2000):
-                                body_el.fill(html_content)
+                            element = page.locator(selector).first
+                            if element.is_visible(timeout=2000):
+                                element.fill(html_content)
                                 body_filled = True
-                                print("Filled body inside iframe.")
+                                print(f"Filled body using selector: {selector}")
                                 break
                         except Exception:
                             continue
 
                 if not body_filled:
-                    print("Error: Could not fill blog body text.")
+                    print("Error: HTML editor textarea is not visible or editable. Cannot fill body.")
                     self._safe_screenshot(page, "body_fill_error.png")
                     return False
 

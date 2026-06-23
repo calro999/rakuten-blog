@@ -349,26 +349,14 @@ def main():
     if not product_image_url:
         product_image_url = "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80"
 
-    img_html = f'<div style="text-align: center; margin: 20px 0;"><img src="{product_image_url}" alt="{clean_title}" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.08);"></div>'
+    img_html = f'<img src="{product_image_url}" alt="{clean_title}" style="max-width: 100%; height: auto; border-radius: 8px;">'
     
-    cta_html = f"""
-<div style="text-align: center; margin: 40px 0 20px 0;">
-    <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #8E6E53; color: #fff; padding: 16px 32px; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 15px rgba(142,110,83,0.3); text-align: center;">
-        ＼ 楽天市場で詳細をチェックする ／
-    </a>
-</div>
-"""
+    cta_html = f'<p style="margin: 20px 0;"><a href="{affiliate_url}" target="_blank" rel="noopener noreferrer"><b>＼ 楽天市場で詳細をチェックする ／</b></a></p>'
     
     article_content = f"{img_html}\n{llm_section}\n{cta_html}"
     
-    # 記事タイトル（H2から抽出またはデフォルト）
-    blog_title = f"【暮らしのQOL向上】おすすめインテリア『{clean_title}』のご紹介"
-    match = re.search(r'<h2>(.*?)</h2>', llm_section)
-    if match:
-        blog_title = match.group(1).strip()
-        # タイトル重複を避けるためh2タグを除去
-        llm_section_clean = llm_section.replace(match.group(0), "")
-        article_content = f"{img_html}\n{llm_section_clean}\n{cta_html}"
+    # 記事タイトル（タグや定型文のないシンプルなもの）
+    blog_title = f"{clean_title}"
 
     # 6. 楽天ブログへ投稿
     print("Posting to Rakuten Blog...")
