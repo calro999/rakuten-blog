@@ -135,40 +135,44 @@ class RakutenBlogAPI:
                     self._safe_screenshot(page, "navigation_error.png")
                     return False
 
-                print("Ensuring HTML editor mode (unchecking '見たまま編集')...")
+                print("Checking current editor mode...")
                 textarea = page.locator('textarea#diaryBody, textarea[name="body"]').first
                 
-                # Check for the mitamama checkbox
-                mitamama_checkbox = page.locator('input[name="mitamama"], input#mitamama').first
-                if mitamama_checkbox.is_visible(timeout=3000):
-                    is_checked = mitamama_checkbox.is_checked()
-                    print(f"'見たまま編集' checkbox checked status: {is_checked}")
-                    if is_checked:
-                        print("Unchecking '見たまま編集' checkbox to enable HTML mode...")
-                        page.evaluate('window.confirm = () => true;')
-                        mitamama_checkbox.click(force=True)
-                        time.sleep(3)
+                if textarea.is_visible(timeout=3000):
+                    print("HTML editor textarea is already visible. Skipping mode toggle.")
                 else:
-                    print("Mitamama checkbox not found. Trying fallback toggle...")
-                    try:
-                        result = page.evaluate('''() => {
-                            window.confirm = () => true;
-                            window.alert = () => true;
-                            const elements = document.querySelectorAll('button, a, span, label, input[type="button"]');
-                            for (let el of elements) {
-                                const text = el.textContent || el.value || "";
-                                if (text.includes("見たまま") || text.includes("HTML編集")) {
-                                    el.click();
-                                    return "element_clicked";
-                                }
-                            }
-                            return "not_found";
-                        }''')
-                        print(f"Fallback toggle result: {result}")
-                        if "clicked" in result:
+                    print("Ensuring HTML editor mode (unchecking '見たまま編集')...")
+                    # Check for the mitamama checkbox
+                    mitamama_checkbox = page.locator('input[name="mitamama"], input#mitamama').first
+                    if mitamama_checkbox.is_visible(timeout=3000):
+                        is_checked = mitamama_checkbox.is_checked()
+                        print(f"'見たまま編集' checkbox checked status: {is_checked}")
+                        if is_checked:
+                            print("Unchecking '見たまま編集' checkbox to enable HTML mode...")
+                            page.evaluate('window.confirm = () => true;')
+                            mitamama_checkbox.click(force=True)
                             time.sleep(3)
-                    except Exception as e:
-                        print(f"Warning: Fallback toggle failed: {e}")
+                    else:
+                        print("Mitamama checkbox not found. Trying fallback toggle...")
+                        try:
+                            result = page.evaluate('''() => {
+                                window.confirm = () => true;
+                                window.alert = () => true;
+                                const elements = document.querySelectorAll('button, a, span, label, input[type="button"]');
+                                for (let el of elements) {
+                                    const text = el.textContent || el.value || "";
+                                    if (text.includes("見たまま") || text.includes("HTML編集")) {
+                                        el.click();
+                                        return "element_clicked";
+                                    }
+                                }
+                                return "not_found";
+                            }''')
+                            print(f"Fallback toggle result: {result}")
+                            if "clicked" in result:
+                                time.sleep(3)
+                        except Exception as e:
+                            print(f"Warning: Fallback toggle failed: {e}")
 
                 # Wait for textarea to be visible
                 try:
