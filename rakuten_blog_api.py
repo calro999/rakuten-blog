@@ -136,7 +136,7 @@ class RakutenBlogAPI:
                     return False
 
                 print("Checking current editor mode...")
-                textarea = page.locator('textarea#diaryBody, textarea[name="body"]').first
+                textarea = page.locator('textarea#diary_write_d_text, textarea[name="diary_write[d_text]"], textarea#diaryBody, textarea[name="body"]').first
                 
                 if textarea.is_visible(timeout=3000):
                     print("HTML editor textarea is already visible. Skipping mode toggle.")
@@ -223,6 +223,8 @@ class RakutenBlogAPI:
                 else:
                     # Fallback to other body textarea selectors just in case name/id changed
                     body_selectors = [
+                        'textarea#diary_write_d_text',
+                        'textarea[name="diary_write[d_text]"]',
                         'textarea[name="body"]',
                         'textarea#diaryBody',
                         'textarea[id*="body"]',
