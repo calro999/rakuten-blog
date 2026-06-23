@@ -62,12 +62,10 @@ def fetch_rakuten_items(app_id: str, access_key: str, affiliate_id: str, keyword
     print(f"Searching with Keyword: {keyword}")
 
     base_url = "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401"
-    genre_id = random.choice(GENRE_IDS)
     params = {
         "applicationId": app_id,
         "affiliateId": affiliate_id,
         "keyword": keyword,
-        "genreId": genre_id,
         "sort": "standard",
         "hits": 10,
         "format": "json"
@@ -292,6 +290,8 @@ def main():
     # 3. 楽天市場から商品を検索 (最大3回リトライ)
     items = []
     for attempt in range(3):
+        if attempt > 0:
+            time.sleep(2)
         items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, keyword)
         if items:
             break
