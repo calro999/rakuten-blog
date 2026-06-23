@@ -258,6 +258,16 @@ def post_to_rakuten_room(item_code: str, comment: str, session_b64: str) -> bool
 def main():
     print("=== Starting Rakuten Interior/Goods Blog & Room Poster ===")
     
+    # ローカルの .env ファイルがあれば読み込む
+    if os.path.exists(".env"):
+        print("Loading environment variables from .env file...")
+        with open(".env", "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    os.environ[key.strip()] = val.strip().strip('"').strip("'")
+    
     rakuten_app_id = os.environ.get("RAKUTEN_APP_ID", "DUMMY_APP_ID")
     rakuten_access_key = os.environ.get("RAKUTEN_ACCESS_KEY", "")
     rakuten_affiliate_id = os.environ.get("RAKUTEN_AFFILIATE_ID", "DUMMY_AFFILIATE_ID")

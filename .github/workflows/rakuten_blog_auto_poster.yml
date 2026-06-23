@@ -32,6 +32,7 @@ jobs:
       - name: Run Auto Poster
         env:
           RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
           RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
           RAKUTEN_BLOG_ID: ${{ secrets.RAKUTEN_BLOG_ID }}
           RAKUTEN_BLOG_SESSION_B64: ${{ secrets.RAKUTEN_BLOG_SESSION_B64 }}
