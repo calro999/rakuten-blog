@@ -137,7 +137,11 @@ class RakutenBlogAPI:
 
                 print("Checking/unchecking visual editor mode...")
                 try:
-                    unchecked = page.evaluate('''() => {
+                    result = page.evaluate('''() => {
+                        window.confirm = () => true;
+                        window.alert = () => true;
+                        
+                        // 1. Checkboxes
                         const checkboxes = document.querySelectorAll('input[type="checkbox"]');
                         for (let cb of checkboxes) {
                             const labelText = cb.labels ? Array.from(cb.labels).map(l => l.textContent).join('') : '';
@@ -145,15 +149,27 @@ class RakutenBlogAPI:
                             if (labelText.includes("見たまま") || parentText.includes("見たまま") || cb.id.includes("mitamama") || cb.name.includes("mitamama")) {
                                 if (cb.checked) {
                                     cb.click();
-                                    return true;
+                                    return "checkbox_unchecked";
                                 }
+                                return "checkbox_already_unchecked";
                             }
                         }
-                        return false;
+                        
+                        // 2. Buttons/labels/tabs
+                        const elements = document.querySelectorAll('button, a, span, label, input[type="button"]');
+                        for (let el of elements) {
+                            const text = el.textContent || el.value || "";
+                            if (text.includes("見たまま") || text.includes("HTML編集")) {
+                                el.click();
+                                return "element_clicked";
+                            }
+                        }
+                        return "not_found";
                     }''')
-                    if unchecked:
-                        print("Successfully switched to HTML editor mode (unchecked '見たまま編集').")
-                        time.sleep(2)
+                    print(f"Editor mode toggle result: {result}")
+                    if "unchecked" in result or "clicked" in result:
+                        print("Switched editor mode. Waiting for reload...")
+                        time.sleep(3)
                 except Exception as e:
                     print(f"Warning: Failed to toggle editor mode: {e}")
 

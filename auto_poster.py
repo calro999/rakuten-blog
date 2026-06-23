@@ -319,9 +319,13 @@ def main():
     affiliate_url = target_item["affiliateUrl"]
     if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
         # hb.afl.rakuten.co.jp/hgc/xxxx/ の xxxx 部分をご自身のIDに差し替える
-        pattern = r'(hb\.afl\.rakuten\.co\.jp/hgc/)[^/]+(/)'
-        affiliate_url = re.sub(pattern, rf'\1{rakuten_affiliate_id}\2', affiliate_url)
-        print(f"Surgically applied your Affiliate ID: {rakuten_affiliate_id}")
+        prefix = "hb.afl.rakuten.co.jp/hgc/"
+        if prefix in affiliate_url:
+            parts = affiliate_url.split(prefix)
+            subparts = parts[1].split("/", 1)
+            if len(subparts) == 2:
+                affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
+                print(f"Surgically applied your Affiliate ID: {rakuten_affiliate_id}")
 
     # 5. LLMで紹介記事（HTML形式）を生成
     print("Generating Review Article...")
