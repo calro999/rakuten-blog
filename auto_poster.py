@@ -378,15 +378,6 @@ def main():
     if success:
         print("Successfully posted to Rakuten Blog!")
         save_cache(target_item["itemCode"])
-        
-        # 7. 楽天ROOMへも投稿 (コレ！)
-        try:
-            print("Generating comment for Rakuten Room...")
-            room_comment = generate_room_comment_with_llm(target_item)
-            print(f"Room Comment:\n{room_comment}")
-            post_to_rakuten_room(target_item["itemCode"], room_comment, session_b64)
-        except Exception as e:
-            print(f"Failed to post to Rakuten Room: {e}")
     else:
         print("Failed to post entry to Rakuten Blog.")
         sys.exit(1)
