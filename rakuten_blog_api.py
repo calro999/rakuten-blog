@@ -7,7 +7,17 @@ from playwright.sync_api import sync_playwright
 
 class RakutenBlogAPI:
     def __init__(self, blog_id: str = "", session_b64: str = None, session_file: str = "session.json"):
-        self.blog_id = blog_id.strip() if blog_id else ""
+        # Clean blog_id (extract username from URL if necessary)
+        cleaned_id = blog_id.strip() if blog_id else ""
+        if "/" in cleaned_id:
+            # e.g. https://plaza.rakuten.co.jp/jack555/ -> jack555
+            cleaned_id = cleaned_id.replace("https://", "").replace("http://", "")
+            parts = [p for p in cleaned_id.split("/") if p]
+            if len(parts) >= 2 and parts[0] == "plaza.rakuten.co.jp":
+                cleaned_id = parts[1]
+            elif parts:
+                cleaned_id = parts[0]
+        self.blog_id = cleaned_id
         self.session_b64 = session_b64
         self.session_file = session_file
 
@@ -31,6 +41,14 @@ class RakutenBlogAPI:
             
         print("Warning: No valid session data provided. Will attempt running without saved session state.")
         return None
+
+    def _safe_screenshot(self, page, path):
+        """Helper to take screenshots safely without crashing the script on timeouts."""
+        try:
+            page.screenshot(path=path, timeout=5000)
+            print(f"Saved screenshot: {path}")
+        except Exception as e:
+            print(f"Warning: Failed to save screenshot {path}: {e}")
 
     def post_entry(self, title: str, html_content: str) -> bool:
         """Posts a blog entry to Rakuten Blog using Playwright."""
@@ -74,7 +92,7 @@ class RakutenBlogAPI:
                     login_btn = page.locator('a:has-text("ログイン"), .login').first
                     if login_btn.is_visible(timeout=2000) and not page.locator('a:has-text("ログアウト")').first.is_visible(timeout=1000):
                         print("Error: Session has expired or is invalid. Login button is visible on the homepage.")
-                        page.screenshot(path="login_required_error.png")
+                        self._safe_screenshot(page, "login_required_error.png")
                         return False
 
                     # Try to find a link to "日記を書く" or "管理ページ"
@@ -99,7 +117,7 @@ class RakutenBlogAPI:
                 print(f"Current URL before filling editor: {current_url}")
                 if "login" in current_url.lower() or "404" in page.title():
                     print("Error: Failed to reach the diary write page.")
-                    page.screenshot(path="navigation_error.png")
+                    self._safe_screenshot(page, "navigation_error.png")
                     return False
 
                 print("Filling title...")
@@ -169,12 +187,11 @@ class RakutenBlogAPI:
 
                 if not body_filled:
                     print("Error: Could not fill blog body text.")
-                    page.screenshot(path="body_fill_error.png")
+                    self._safe_screenshot(page, "body_fill_error.png")
                     return False
 
                 # Take screenshot of filled state
-                page.screenshot(path="filled_post_draft.png")
-                print("Saved preview screenshot: filled_post_draft.png")
+                self._safe_screenshot(page, "filled_post_draft.png")
 
                 # Submit the post
                 print("Clicking submit/preview button...")
@@ -208,7 +225,7 @@ class RakutenBlogAPI:
                     return False
 
                 time.sleep(5)
-                page.screenshot(path="after_first_click.png")
+                self._safe_screenshot(page, "after_first_click.png")
 
                 # Handle confirmation step if applicable
                 current_url = page.url
@@ -236,8 +253,7 @@ class RakutenBlogAPI:
                     except Exception:
                         continue
 
-                page.screenshot(path="publish_result.png")
-                print("Saved final publication screenshot: publish_result.png")
+                self._safe_screenshot(page, "publish_result.png")
                 
                 success = True
                 print("Diary post completed successfully!")
