@@ -220,7 +220,7 @@ def post_to_rakuten_room(item_code: str, comment: str, session_b64: str) -> bool
             page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
             warp_url = f"https://room.rakuten.co.jp/mix?itemcode={item_code}&scid=we_room_upc60"
-            page.goto(warp_url, wait_until="load", timeout=45000)
+            page.goto(warp_url, wait_until="domcontentloaded", timeout=60000)
             time.sleep(4)
 
             if "login.rakuten.co.jp" in page.url or "login" in page.url.lower():
