@@ -116,41 +116,54 @@ class ArticleGenerator:
                 continue
 
         # --- フォールバックロジック (LLMが全滅した場合) ---
-        # 1. 検索キーワードから修飾語（北欧、おしゃれ等）を取り除き、商品名そのものを抽出する
-        core_product = search_keyword
-        for modifier in [
-            "北欧", "おしゃれ", "モダン", "静音", "洗える", "来客用", "分別", 
-            "LED", "木製", "ガラス", "フェイク", "グリーン", "収納", "インテリア", "雑貨"
-        ]:
-            core_product = core_product.replace(modifier, "")
-        core_product = re.sub(r'\s+', ' ', core_product).strip()
+        # 1. 商品タイトルから記号・ノイズ・大まかなカテゴリ名を徹底的に除去し、商品固有の固有名詞を残す
+        short_title = clean_title
+        short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
         
-        # 2. 抽出できた場合はそれを使用し、できなければ商品タイトルから切り出す
-        if core_product and len(core_product) >= 2:
-            product_name = core_product
-        else:
-            short_title = clean_title
-            short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
-            noise_words = [
-                "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
-                "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン",
-                "プチプラ", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", "インテリア"
-            ]
-            for noise in noise_words:
-                short_title = short_title.replace(noise, "")
+        # 楽天市場で極めて一般的なSEO対策・カテゴリ用ノイズワード
+        noise_words = [
+            "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
+            "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン",
+            "プチプラ", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", "インテリア", "雑貨",
+            "フェイクグリーン", "フェイク", "観葉植物", "人工観葉植物", "光触媒", "CT触媒", "消臭", "抗菌",
+            "収納ボックス", "収納ケース", "収納", "かご", "バスケット", "ゴミ箱", "ダストボックス",
+            "フラワーベース", "花瓶", "バスマット", "珪藻土マット", "珪藻土バスマット", "時計", "壁掛け時計",
+            "アロマディフューザー", "ディフューザー", "スリッパ", "ルームシューズ", "洗える", "来客用", "食器", "プレート"
+        ]
+        for noise in noise_words:
+            short_title = short_title.replace(noise, "")
             
-            short_title = re.sub(r'\s+', ' ', short_title).strip()
-            words = [w for w in short_title.split(' ') if w]
-            selected_words = []
-            char_count = 0
-            for w in words:
-                if len(selected_words) >= 3 or char_count + len(w) > 30:
-                    break
-                selected_words.append(w)
-                char_count += len(w) + 1
-            product_name = " ".join(selected_words).strip() or "おすすめアイテム"
+        short_title = re.sub(r'\s+', ' ', short_title).strip()
+        
+        # スペースで分割して最初の2単語を結合（具体的な商品名を狙う）
+        words = [w for w in short_title.split(' ') if w]
+        selected_words = []
+        char_count = 0
+        for w in words:
+            # 記号や短いサイズ表記・型番などをスキップ
+            if re.match(r'^[a-zA-Z0-9_\-\.\/]+$', w) and len(w) <= 3:
+                continue
+            if len(selected_words) >= 2 or char_count + len(w) > 20:
+                break
+            selected_words.append(w)
+            char_count += len(w) + 1
+            
+        product_name = " ".join(selected_words).strip()
+        
+        # 2. もし商品タイトルからの抽出が空になった場合は、検索キーワードからカテゴリ名をフォールバックとして使用
+        if not product_name:
+            core_product = search_keyword
+            for modifier in [
+                "北欧", "おしゃれ", "モダン", "静音", "洗える", "来客用", "分別", 
+                "LED", "木製", "ガラス", "フェイク", "グリーン", "収納", "インテリア", "雑貨"
+            ]:
+                core_product = core_product.replace(modifier, "")
+            product_name = re.sub(r'\s+', ' ', core_product).strip()
+            
+        if not product_name:
+            product_name = "おすすめアイテム"
 
-        # Generate a dynamic and natural fallback title without fixed templates or ellipsis
+        # 3. テンプレ臭さを排除した4パターンの自然なタイトル候補から選定
         fallback_patterns = [
             f"おうち時間を快適にする「{product_name}」の魅力とおすすめポイント",
             f"日常のQOLが高まる！「{product_name}」を取り入れたおしゃれな暮らし",

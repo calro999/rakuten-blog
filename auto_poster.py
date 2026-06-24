@@ -345,6 +345,9 @@ def main():
     
     llm_section = article_gen.generate_review_article(generator_input_item)
 
+    # APIの連続呼び出し（429エラー）を回避するため少し待機
+    time.sleep(3)
+
     # 画像HTML、CTAアフィリエイトリンクボタンを追加して完成HTMLを作る
     product_image_url = target_item.get("imageUrl", "")
     if not product_image_url:
