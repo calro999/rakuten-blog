@@ -212,32 +212,71 @@ class RakutenBlogAPI:
                             print("Filled title in the first visible text input.")
                             break
 
-                print("Filling body content into textarea...")
+                # 1. TinyMCE API (setContent)
                 body_filled = False
-                if textarea.is_visible(timeout=3000):
-                    textarea.fill(html_content)
-                    body_filled = True
-                    print("Successfully filled body in HTML editor.")
-                else:
-                    # Fallback to other body textarea selectors just in case name/id changed
-                    body_selectors = [
+                try:
+                    tinymce_active = page.evaluate('''() => {
+                        if (window.tinymce && window.tinymce.activeEditor) {
+                            return true;
+                        }
+                        return false;
+                    }''')
+                    if tinymce_active:
+                        print("TinyMCE active editor found. Setting content via TinyMCE API...")
+                        page.evaluate('''(html) => {
+                            window.tinymce.activeEditor.setContent(html);
+                        }''', html_content)
+                        body_filled = True
+                        print("Successfully set content via TinyMCE API.")
+                except Exception as e:
+                    print(f"Warning: Failed to set content via TinyMCE API: {e}")
+
+                # 2. Direct iframe body innerHTML injection
+                if not body_filled:
+                    try:
+                        iframe_locator = page.locator('iframe[id*="text_ifr"], iframe[id*="body_ifr"], iframe').first
+                        if iframe_locator.count() > 0:
+                            print("TinyMCE iframe found. Setting innerHTML of iframe body...")
+                            page.evaluate('''(html) => {
+                                const iframe = document.querySelector('iframe[id*="text_ifr"], iframe[id*="body_ifr"], iframe');
+                                if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
+                                    iframe.contentDocument.body.innerHTML = html;
+                                    return true;
+                                }
+                                return false;
+                            }''', html_content)
+                            body_filled = True
+                            print("Successfully set innerHTML in TinyMCE iframe.")
+                    except Exception as e:
+                        print(f"Warning: Failed to set content inside TinyMCE iframe: {e}")
+
+                # 3. Direct textarea value injection (even if hidden)
+                if not body_filled:
+                    print("Filling HTML directly into textarea...")
+                    textarea_selectors = [
                         'textarea#diary_write_d_text',
                         'textarea[name="diary_write[d_text]"]',
                         'textarea[name="body"]',
                         'textarea#diaryBody',
-                        'textarea[id*="body"]',
-                        'textarea[placeholder*="本文"]',
                         'textarea'
                     ]
-                    for selector in body_selectors:
+                    for selector in textarea_selectors:
                         try:
-                            element = page.locator(selector).first
-                            if element.is_visible(timeout=2000):
-                                element.fill(html_content)
+                            if page.locator(selector).count() > 0:
+                                page.evaluate('''(sel, html) => {
+                                    const el = document.querySelector(sel);
+                                    if (el) {
+                                        el.value = html;
+                                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                                        return true;
+                                    }
+                                    return false;
+                                }''', selector, html_content)
                                 body_filled = True
-                                print(f"Filled body using selector: {selector}")
+                                print(f"Successfully filled textarea using selector: {selector}")
                                 break
-                        except Exception:
+                        except Exception as e:
+                            print(f"Warning: Failed to fill textarea {selector}: {e}")
                             continue
 
                 if not body_filled:
