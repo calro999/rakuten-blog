@@ -353,7 +353,8 @@ def main():
     
     cta_html = f'<p style="margin: 20px 0;"><a href="{affiliate_url}" target="_blank" rel="noopener noreferrer"><b>＼ 楽天市場で詳細をチェックする ／</b></a></p>'
     
-    article_content = f"{img_html}\n{llm_section}\n{cta_html}"
+    ad_tag = '<pointad pointad-id="div-plaza-point-ad" pointad-text="#ブロ活広告#" /><br /><br />'
+    article_content = f"{img_html}\n{llm_section}\n{cta_html}\n{ad_tag}"
     
     # 記事タイトル（CTR重視の魅力的なタイトルを生成）
     print("Generating Blog Title...")
