@@ -120,15 +120,13 @@ class ArticleGenerator:
         short_title = clean_title
         short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
         
-        # 楽天市場で極めて一般的なSEO対策・カテゴリ用ノイズワード
+        # 楽天市場で極めて一般的な広告・宣伝用ノイズワード（商品カテゴリ名自体は消さずに残す）
         noise_words = [
             "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
             "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン",
-            "プチプラ", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", "インテリア", "雑貨",
-            "フェイクグリーン", "フェイク", "観葉植物", "人工観葉植物", "光触媒", "CT触媒", "消臭", "抗菌",
-            "収納ボックス", "収納ケース", "収納", "かご", "バスケット", "ゴミ箱", "ダストボックス",
-            "フラワーベース", "花瓶", "バスマット", "珪藻土マット", "珪藻土バスマット", "時計", "壁掛け時計",
-            "アロマディフューザー", "ディフューザー", "スリッパ", "ルームシューズ", "洗える", "来客用", "食器", "プレート"
+            "プチプラ", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", "レトロ", "デザイン",
+            "おすすめ", "人気", "大容量", "便利", "実用性", "機能的", "軽量", "静音", "洗える", "来客用",
+            "光触媒", "CT触媒", "消臭", "抗菌", "防臭"
         ]
         for noise in noise_words:
             short_title = short_title.replace(noise, "")
@@ -163,12 +161,12 @@ class ArticleGenerator:
         if not product_name:
             product_name = "おすすめアイテム"
 
-        # 3. テンプレ臭さを排除した4パターンの自然なタイトル候補から選定
+        # 3. 嘘のレビュー（「使ってみた感想」など）を含まない、事実ベースの自然なタイトル
         fallback_patterns = [
-            f"おうち時間を快適にする「{product_name}」の魅力とおすすめポイント",
-            f"日常のQOLが高まる！「{product_name}」を取り入れたおしゃれな暮らし",
-            f"実用性とデザイン性を兼ね備えた「{product_name}」を使ってみた感想",
-            f"お部屋の雰囲気がガラリと変わる「{product_name}」のすてきな使い方"
+            f"おうち時間を快適にする「{product_name}」の魅力と機能性のまとめ",
+            f"日常のQOLが高まる！「{product_name}」を取り入れた暮らしのアイデア",
+            f"実用性と美しさを備えた「{product_name}」の注目ポイントを解説",
+            f"お部屋の雰囲気を整える「{product_name}」の上手な取り入れ方"
         ]
         return random.choice(fallback_patterns)
 
@@ -301,7 +299,7 @@ class ArticleGenerator:
             }
             try:
                 resp = requests.post(url, json=payload, timeout=25)
-                if resp.status_code == 200 and len(resp.text.strip()) > 150:
+                if resp.status_code == 200 and len(resp.text.strip()) > 5:
                     return resp.text
                 elif resp.status_code == 429:
                     time.sleep(attempt+2)
