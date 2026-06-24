@@ -14,3 +14,4 @@ hayaritsushin:10003669
 shiseionne:10000000
 asia-kobo:10014953
 k-hana:10002307
+b-faith:10000606
