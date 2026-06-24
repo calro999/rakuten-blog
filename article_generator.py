@@ -105,19 +105,32 @@ class ArticleGenerator:
         for name, gen_fn in generators:
             try:
                 res = gen_fn(prompt, system_prompt=system_prompt)
-                if res and len(res.strip()) > 5:
+                if res and len(res.strip()) > 3:
                     clean_res = re.sub(r'<[^>]+>|[\"\'「」『』【】]', '', res).strip()
                     if clean_res:
                         return clean_res[:40]
-            except Exception:
+            except Exception as e:
+                print(f"Error in {name} during title generation: {e}")
                 continue
 
-        # More robust clean title fallback (remove common noise words)
+        # More robust clean title fallback
         short_title = clean_title
-        for noise in ["送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", "公式", "限定"]:
+        # Remove brackets and common Rakuten SEO noise words
+        short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
+        for noise in [
+            "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
+            "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン"
+        ]:
             short_title = short_title.replace(noise, "")
-        short_title = short_title.strip()[:20]
-        return f"毎日の暮らしが変わる！おすすめの{short_title}をご紹介"
+        
+        # Remove extra whitespaces
+        short_title = re.sub(r'\s+', ' ', short_title).strip()
+        
+        # Avoid cutting in the middle of a word if possible, but keep it within reasonable length
+        if len(short_title) > 25:
+            short_title = short_title[:25] + "..."
+            
+        return f"毎日の暮らしが変わる！おすすめの「{short_title}」をご紹介"
 
     def _generate_with_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("GEMINI_API_KEY")
