@@ -339,7 +339,8 @@ def main():
         "title": target_item["title"],
         "clean_title": clean_title,
         "price": target_item["price"],
-        "caption": target_item["itemCaption"]
+        "caption": target_item["itemCaption"],
+        "search_keyword": keyword
     }
     
     llm_section = article_gen.generate_review_article(generator_input_item)

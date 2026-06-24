@@ -3,6 +3,7 @@ import re
 import requests
 import json
 import time
+import random
 import urllib.parse
 from typing import Dict, Any, Optional
 
@@ -79,6 +80,7 @@ class ArticleGenerator:
         title = item.get("title", "")
         clean_title = item.get("clean_title", title)
         caption = item.get("caption", "")
+        search_keyword = item.get("search_keyword", "")
 
         system_prompt = "あなたは読者の目を引き、クリック率（CTR）を最大化するブログ記事タイトルを作成するプロのコピーライターです。日本語で、余計な説明や前置きなしにタイトルテキストのみを出力してください。"
 
@@ -113,24 +115,49 @@ class ArticleGenerator:
                 print(f"Error in {name} during title generation: {e}")
                 continue
 
-        # More robust clean title fallback
-        short_title = clean_title
-        # Remove brackets and common Rakuten SEO noise words
-        short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
-        for noise in [
-            "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
-            "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン"
+        # --- フォールバックロジック (LLMが全滅した場合) ---
+        # 1. 検索キーワードから修飾語（北欧、おしゃれ等）を取り除き、商品名そのものを抽出する
+        core_product = search_keyword
+        for modifier in [
+            "北欧", "おしゃれ", "モダン", "静音", "洗える", "来客用", "分別", 
+            "LED", "木製", "ガラス", "フェイク", "グリーン", "収納", "インテリア", "雑貨"
         ]:
-            short_title = short_title.replace(noise, "")
+            core_product = core_product.replace(modifier, "")
+        core_product = re.sub(r'\s+', ' ', core_product).strip()
         
-        # Remove extra whitespaces
-        short_title = re.sub(r'\s+', ' ', short_title).strip()
-        
-        # Avoid cutting in the middle of a word if possible, but keep it within reasonable length
-        if len(short_title) > 25:
-            short_title = short_title[:25] + "..."
+        # 2. 抽出できた場合はそれを使用し、できなければ商品タイトルから切り出す
+        if core_product and len(core_product) >= 2:
+            product_name = core_product
+        else:
+            short_title = clean_title
+            short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
+            noise_words = [
+                "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
+                "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン",
+                "プチプラ", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", "インテリア"
+            ]
+            for noise in noise_words:
+                short_title = short_title.replace(noise, "")
             
-        return f"毎日の暮らしが変わる！おすすめの「{short_title}」をご紹介"
+            short_title = re.sub(r'\s+', ' ', short_title).strip()
+            words = [w for w in short_title.split(' ') if w]
+            selected_words = []
+            char_count = 0
+            for w in words:
+                if len(selected_words) >= 3 or char_count + len(w) > 30:
+                    break
+                selected_words.append(w)
+                char_count += len(w) + 1
+            product_name = " ".join(selected_words).strip() or "おすすめアイテム"
+
+        # Generate a dynamic and natural fallback title without fixed templates or ellipsis
+        fallback_patterns = [
+            f"おうち時間を快適にする「{product_name}」の魅力とおすすめポイント",
+            f"日常のQOLが高まる！「{product_name}」を取り入れたおしゃれな暮らし",
+            f"実用性とデザイン性を兼ね備えた「{product_name}」を使ってみた感想",
+            f"お部屋の雰囲気がガラリと変わる「{product_name}」のすてきな使い方"
+        ]
+        return random.choice(fallback_patterns)
 
     def _generate_with_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("GEMINI_API_KEY")
