@@ -75,6 +75,42 @@ class ArticleGenerator:
         html_output = re.sub(r'<a\s+[^>]*>', add_target_blank, raw_article)
         return html_output
 
+    def generate_blog_title(self, item: Dict[str, Any]) -> str:
+        title = item.get("title", "")
+        clean_title = item.get("clean_title", title)
+        caption = item.get("caption", "")
+
+        prompt = f"""以下の商品情報を元に、クリック率（CTR）が高く、読者が思わずクリックしたくなるような魅力的なブログ記事タイトルを1つだけ生成してください。
+【商品名】: {clean_title}
+【商品説明】: {caption}
+
+【生成ルール（厳格遵守）】:
+1. 最も伝えたいメリット（例：お部屋がおしゃれになる、QOL爆上がり、など）をタイトルの一番最初に書いてください。
+2. 文字数は30文字以内とし、長くなりすぎないようにしてください。
+3. HTMLタグ（<h2>など）やマークダウン記法、引用符（「」や【】、" など）は一切含めず、プレーンテキストのみで出力してください。
+4. 出力はタイトルのみとし、前置きや解説などは一切含めないでください。
+"""
+        generators = [
+            ("Gemini API (Free Tier)", self._generate_with_gemini),
+            ("GitHub Models API (Free for Actions/PAT)", self._generate_with_github_models),
+            ("OpenRouter Free API", self._generate_with_openrouter),
+            ("Hugging Face API (Free Tier)", self._generate_with_huggingface),
+            ("Pollinations AI Free (No Key Required)", self._generate_with_pollinations),
+        ]
+
+        for name, gen_fn in generators:
+            try:
+                res = gen_fn(prompt)
+                if res and len(res.strip()) > 5:
+                    clean_res = re.sub(r'<[^>]+>|[\"\'「」『』【】]', '', res).strip()
+                    if clean_res:
+                        return clean_res[:40]
+            except Exception:
+                continue
+
+        short_title = clean_title[:20]
+        return f"毎日の暮らしが変わる！おすすめの{short_title}をご紹介"
+
     def _generate_with_gemini(self, prompt: str) -> Optional[str]:
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:

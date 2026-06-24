@@ -355,8 +355,10 @@ def main():
     
     article_content = f"{img_html}\n{llm_section}\n{cta_html}"
     
-    # 記事タイトル（タグや定型文のないシンプルなもの）
-    blog_title = f"{clean_title}"
+    # 記事タイトル（CTR重視の魅力的なタイトルを生成）
+    print("Generating Blog Title...")
+    blog_title = article_gen.generate_blog_title(generator_input_item)
+    print(f"Generated Title: {blog_title}")
 
     # 6. 楽天ブログへ投稿
     print("Posting to Rakuten Blog...")
