@@ -116,17 +116,25 @@ class ArticleGenerator:
                 continue
 
         # --- フォールバックロジック (LLMが全滅した場合) ---
-        # 1. 商品タイトルから記号・ノイズ・大まかなカテゴリ名を徹底的に除去し、商品固有の固有名詞を残す
+        # 1. 検索キーワードから修飾語（北欧、おしゃれ等）を取り除き、クリーンなカテゴリ名を作る
+        clean_keyword = search_keyword
+        for modifier in [
+            "北欧", "おしゃれ", "モダン", "静音", "洗える", "来客用", "分別", 
+            "LED", "木製", "ガラス", "フェイク", "グリーン", "収納", "インテリア", "雑貨"
+        ]:
+            clean_keyword = clean_keyword.replace(modifier, "")
+        clean_keyword = re.sub(r'\s+', ' ', clean_keyword).strip()
+
+        # 2. 商品タイトルから記号・ノイズを徹底的に除去し、商品名らしき部分を切り出す
         short_title = clean_title
         short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
         
-        # 楽天市場で極めて一般的な広告・宣伝用ノイズワード（商品カテゴリ名自体は消さずに残す）
         noise_words = [
             "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
             "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン",
             "プチプラ", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", "レトロ", "デザイン",
             "おすすめ", "人気", "大容量", "便利", "実用性", "機能的", "軽量", "静音", "洗える", "来客用",
-            "光触媒", "CT触媒", "消臭", "抗菌", "防臭"
+            "光触媒", "CT触媒", "消臭", "抗菌", "防臭", "全20種", "20種"
         ]
         for noise in noise_words:
             short_title = short_title.replace(noise, "")
@@ -148,20 +156,23 @@ class ArticleGenerator:
             
         product_name = " ".join(selected_words).strip()
         
-        # 2. もし商品タイトルからの抽出が空になった場合は、検索キーワードからカテゴリ名をフォールバックとして使用
-        if not product_name:
-            core_product = search_keyword
-            for modifier in [
-                "北欧", "おしゃれ", "モダン", "静音", "洗える", "来客用", "分別", 
-                "LED", "木製", "ガラス", "フェイク", "グリーン", "収納", "インテリア", "雑貨"
-            ]:
-                core_product = core_product.replace(modifier, "")
-            product_name = re.sub(r'\s+', ' ', core_product).strip()
-            
-        if not product_name:
-            product_name = "おすすめアイテム"
+        # 3. 抽出した製品名に販促用ノイズ（「倍」「%」「OFF」「割引」「円」「エントリー」「対象」など）や
+        # 数字と記号の組み合わせが含まれている場合は、その抽出結果を捨てて、クリーンな検索キーワードを商品名とする
+        promo_patterns = [
+            r'倍', r'%', r'％', r'OFF', r'off', r'割引', r'円', r'エントリー', r'対象', 
+            r'\+', r'\d+L', r'\d+l', r'\d+リットル', r'\d+分別', r'\d+種', r'最大'
+        ]
+        is_invalid_product = False
+        if product_name:
+            for pattern in promo_patterns:
+                if re.search(pattern, product_name):
+                    is_invalid_product = True
+                    break
+        
+        if is_invalid_product or not product_name:
+            product_name = clean_keyword or "おすすめアイテム"
 
-        # 3. 嘘のレビュー（「使ってみた感想」など）を含まない、事実ベースの自然なタイトル
+        # 4. 嘘のレビュー（「使ってみた感想」など）を含まない、事実ベースの自然なタイトル
         fallback_patterns = [
             f"おうち時間を快適にする「{product_name}」の魅力と機能性のまとめ",
             f"日常のQOLが高まる！「{product_name}」を取り入れた暮らしのアイデア",
