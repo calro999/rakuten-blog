@@ -10,3 +10,4 @@ risu-onlineshop:10002384
 heart-box:10001396
 auc-rmjapan:10000510
 risopale:10000017
+hayaritsushin:10003669
