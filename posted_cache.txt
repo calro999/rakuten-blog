@@ -9,3 +9,4 @@ lykke-hygge:10000005
 risu-onlineshop:10002384
 heart-box:10001396
 auc-rmjapan:10000510
+risopale:10000017
