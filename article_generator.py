@@ -80,15 +80,19 @@ class ArticleGenerator:
         clean_title = item.get("clean_title", title)
         caption = item.get("caption", "")
 
+        system_prompt = "あなたは読者の目を引き、クリック率（CTR）を最大化するブログ記事タイトルを作成するプロのコピーライターです。日本語で、余計な説明や前置きなしにタイトルテキストのみを出力してください。"
+
         prompt = f"""以下の商品情報を元に、クリック率（CTR）が高く、読者が思わずクリックしたくなるような魅力的なブログ記事タイトルを1つだけ生成してください。
+
 【商品名】: {clean_title}
 【商品説明】: {caption}
 
 【生成ルール（厳格遵守）】:
-1. 最も伝えたいメリット（例：お部屋がおしゃれになる、QOL爆上がり、など）をタイトルの一番最初に書いてください。
-2. 文字数は30文字以内とし、長くなりすぎないようにしてください。
-3. HTMLタグ（<h2>など）やマークダウン記法、引用符（「」や【】、" など）は一切含めず、プレーンテキストのみで出力してください。
-4. 出力はタイトルのみとし、前置きや解説などは一切含めないでください。
+1. 最も伝えたい商品のメリットや魅力（例：お部屋がおしゃれになる、QOL爆上がり、家事が劇的に楽になる、など）をタイトルの一番最初に書いてください。
+2. 紹介する「具体的な商品名（例：珪藻土バスマット、壁掛け時計、アロマディフューザーなど、何を紹介しているのかがはっきりわかる言葉）」を必ずタイトルに含めてください。商品名が抜けているタイトルは絶対にNGです。
+3. 文字数は30文字以内とし、長くなりすぎないようにしてください。
+4. HTMLタグ（<h2>など）やマークダウン記法、引用符（「」や【】、" など）は一切含めず、プレーンテキストのみで出力してください。
+5. 出力はタイトルのみとし、前置きや解説などは一切含めないでください。
 """
         generators = [
             ("Gemini API (Free Tier)", self._generate_with_gemini),
@@ -100,7 +104,7 @@ class ArticleGenerator:
 
         for name, gen_fn in generators:
             try:
-                res = gen_fn(prompt)
+                res = gen_fn(prompt, system_prompt=system_prompt)
                 if res and len(res.strip()) > 5:
                     clean_res = re.sub(r'<[^>]+>|[\"\'「」『』【】]', '', res).strip()
                     if clean_res:
@@ -108,20 +112,25 @@ class ArticleGenerator:
             except Exception:
                 continue
 
-        short_title = clean_title[:20]
+        # More robust clean title fallback (remove common noise words)
+        short_title = clean_title
+        for noise in ["送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", "公式", "限定"]:
+            short_title = short_title.replace(noise, "")
+        short_title = short_title.strip()[:20]
         return f"毎日の暮らしが変わる！おすすめの{short_title}をご紹介"
 
-    def _generate_with_gemini(self, prompt: str) -> Optional[str]:
+    def _generate_with_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             return None
         
+        sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを遵守し、余計な挨拶や解説を一切含まないHTML本文のみを出力します。"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{
                 "parts": [{
-                    "text": "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを遵守し、余計な挨拶や解説を一切含まないHTML本文のみを出力します。\n\n" + prompt
+                    "text": sys_msg + "\n\n" + prompt
                 }]
             }],
             "generationConfig": {
@@ -138,11 +147,12 @@ class ArticleGenerator:
                 return None
         return None
 
-    def _generate_with_github_models(self, prompt: str) -> Optional[str]:
+    def _generate_with_github_models(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
         if not token:
             return None
         
+        sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示されたルールを厳格に守り、日本語で前置き・後書きなしでHTML本文のみを出力してください。"
         url = "https://models.inference.ai.azure.com/chat/completions"
         headers = {
             "Authorization": f"Bearer {token}",
@@ -151,7 +161,7 @@ class ArticleGenerator:
         payload = {
             "model": "gpt-4o-mini",
             "messages": [
-                {"role": "system", "content": "あなたはライフスタイルブログのプロ編集者です。指示されたルールを厳格に守り、日本語で前置き・後書きなしでHTML本文のみを出力してください。"},
+                {"role": "system", "content": sys_msg},
                 {"role": "user", "content": prompt}
             ],
             "temperature": 0.7
@@ -164,11 +174,12 @@ class ArticleGenerator:
                 return None
         return None
 
-    def _generate_with_openrouter(self, prompt: str) -> Optional[str]:
+    def _generate_with_openrouter(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
             return None
         
+        sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを守り、余計な解説を一切含まない日本語のHTML本文のみを出力します。"
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -177,7 +188,7 @@ class ArticleGenerator:
         payload = {
             "model": "google/gemma-2-9b-it:free",
             "messages": [
-                {"role": "system", "content": "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを守り、余計な解説を一切含まない日本語のHTML本文のみを出力します。"},
+                {"role": "system", "content": sys_msg},
                 {"role": "user", "content": prompt}
             ],
             "temperature": 0.7
@@ -191,11 +202,12 @@ class ArticleGenerator:
                 return None
         return None
 
-    def _generate_with_huggingface(self, prompt: str) -> Optional[str]:
+    def _generate_with_huggingface(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("HF_API_KEY") or os.environ.get("HF_TOKEN")
         if not api_key:
             return None
         
+        sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。日本語で余計な前置きや後書きなしに、HTML本文のみを出力します。"
         model_id = "Qwen/Qwen2.5-72B-Instruct"
         url = f"https://api-inference.huggingface.co/models/{model_id}"
         headers = {
@@ -203,7 +215,7 @@ class ArticleGenerator:
             "Content-Type": "application/json"
         }
         payload = {
-            "inputs": f"<|im_start|>system\nあなたはライフスタイルブログのプロ編集者です。日本語で余計な前置きや後書きなしに、HTML本文のみを出力します。<|im_end|>\n<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n",
+            "inputs": f"<|im_start|>system\n{sys_msg}<|im_end|>\n<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n",
             "parameters": {
                 "max_new_tokens": 1500,
                 "temperature": 0.7
@@ -221,14 +233,15 @@ class ArticleGenerator:
                 return None
         return None
 
-    def _generate_with_pollinations(self, prompt: str) -> Optional[str]:
+    def _generate_with_pollinations(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         url = "https://text.pollinations.ai/"
         models = ["openai", "qwen", "mistral"]
         
+        sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示されたルールを厳格に守り、日本語で前置き・後書きなしでHTML本文のみを出力してください。"
         for attempt, model in enumerate(models):
             payload = {
                 "messages": [
-                    {"role": "system", "content": "あなたはライフスタイルブログのプロ編集者です。指示されたルールを厳格に守り、日本語で前置き・後書きなしでHTML本文のみを出力してください。"},
+                    {"role": "system", "content": sys_msg},
                     {"role": "user", "content": prompt}
                 ],
                 "model": model
