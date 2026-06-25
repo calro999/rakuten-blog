@@ -28,3 +28,4 @@ keyuca:10022929
 asvel:10000231
 bellemaison-interior:10169416
 bellevie-harima:10154049
+keyuca:10035632
