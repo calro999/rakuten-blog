@@ -25,3 +25,4 @@ hanko-online:10001799
 soeru:10000309
 keyuca:10019944
 keyuca:10022929
+asvel:10000231
