@@ -29,3 +29,4 @@ asvel:10000231
 bellemaison-interior:10169416
 bellevie-harima:10154049
 keyuca:10035632
+asia-kobo:10016531
