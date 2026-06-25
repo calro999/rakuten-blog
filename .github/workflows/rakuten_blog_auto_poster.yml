@@ -2,8 +2,8 @@ name: Rakuten Blog Auto Poster
 
 on:
   schedule:
-    # 毎日 午前9:00 と 午後9:00 (日本時間) に実行 (UTCでは 00:00 と 12:00)
-    - cron: '0 0,12 * * *'
+    # 4時間ごとに実行
+    - cron: '0 */4 * * *'
   workflow_dispatch: # 手動実行も可能にします
 
 jobs:
