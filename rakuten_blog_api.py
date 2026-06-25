@@ -225,34 +225,20 @@ class RakutenBlogAPI:
                         print("TinyMCE active editor found. Setting content via TinyMCE API...")
                         page.evaluate('''(html) => {
                             window.tinymce.activeEditor.setContent(html);
+                            if (typeof window.tinymce.triggerSave === 'function') {
+                                window.tinymce.triggerSave();
+                            } else if (window.tinymce.activeEditor.save) {
+                                window.tinymce.activeEditor.save();
+                            }
                         }''', html_content)
                         body_filled = True
-                        print("Successfully set content via TinyMCE API.")
+                        print("Successfully set content via TinyMCE API and triggered save.")
                 except Exception as e:
                     print(f"Warning: Failed to set content via TinyMCE API: {e}")
 
-                # 2. Direct iframe body innerHTML injection
-                if not body_filled:
-                    try:
-                        iframe_locator = page.locator('iframe[id*="text_ifr"], iframe[id*="body_ifr"], iframe').first
-                        if iframe_locator.count() > 0:
-                            print("TinyMCE iframe found. Setting innerHTML of iframe body...")
-                            page.evaluate('''(html) => {
-                                const iframe = document.querySelector('iframe[id*="text_ifr"], iframe[id*="body_ifr"], iframe');
-                                if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
-                                    iframe.contentDocument.body.innerHTML = html;
-                                    return true;
-                                }
-                                return false;
-                            }''', html_content)
-                            body_filled = True
-                            print("Successfully set innerHTML in TinyMCE iframe.")
-                    except Exception as e:
-                        print(f"Warning: Failed to set content inside TinyMCE iframe: {e}")
-
-                # 3. Direct textarea value injection (even if hidden)
-                if not body_filled:
-                    print("Filling HTML directly into textarea...")
+                # 2. Direct textarea value injection (even if hidden)
+                # We always try to sync with the textareas just in case
+                try:
                     textarea_selectors = [
                         'textarea#diary_write_d_text',
                         'textarea[name="diary_write[d_text]"]',
@@ -261,23 +247,22 @@ class RakutenBlogAPI:
                         'textarea'
                     ]
                     for selector in textarea_selectors:
-                        try:
-                            if page.locator(selector).count() > 0:
-                                page.evaluate('''(sel, html) => {
-                                    const el = document.querySelector(sel);
-                                    if (el) {
-                                        el.value = html;
-                                        el.dispatchEvent(new Event('change', { bubbles: true }));
-                                        return true;
-                                    }
-                                    return false;
-                                }''', selector, html_content)
-                                body_filled = True
-                                print(f"Successfully filled textarea using selector: {selector}")
-                                break
-                        except Exception as e:
-                            print(f"Warning: Failed to fill textarea {selector}: {e}")
-                            continue
+                        if page.locator(selector).count() > 0:
+                            page.evaluate('''([sel, html]) => {
+                                const el = document.querySelector(sel);
+                                if (el) {
+                                    el.value = html;
+                                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                                    return true;
+                                }
+                                return false;
+                            }''', [selector, html_content])
+
+                            print(f"Synced/filled textarea directly using selector: {selector}")
+                            body_filled = True
+                except Exception as e:
+                    print(f"Warning: Failed to fill/sync textarea directly: {e}")
 
                 if not body_filled:
                     print("Error: HTML editor textarea is not visible or editable. Cannot fill body.")
@@ -288,9 +273,18 @@ class RakutenBlogAPI:
                 self._safe_screenshot(page, "filled_post_draft.png")
 
                 # Submit the post
-                print("Clicking submit/preview button...")
+                print("Clicking submit/preview/draft button...")
                 self._remove_overlays(page)
-                submit_selectors = [
+                
+                # Check for explicit draft submit button first (since we want to save draft)
+                # diary_write_draft_submit is the ID of the "下書き保存" button
+                draft_btn = page.locator('button#diary_write_draft_submit, input#diary_write_draft_submit, button:has-text("下書き保存")').first
+                submit_selectors = []
+                if draft_btn.is_visible(timeout=2000):
+                    submit_selectors.append('button#diary_write_draft_submit')
+                    print("Explicit '下書き保存' button found. Prioritizing it.")
+                
+                submit_selectors.extend([
                     'input[type="submit"][value*="確認"]',
                     'input[type="submit"][value*="登録"]',
                     'input[type="submit"][value*="掲載"]',
@@ -299,7 +293,7 @@ class RakutenBlogAPI:
                     'button:has-text("掲載")',
                     'input[type="submit"]',
                     'button[type="submit"]'
-                ]
+                ])
                 
                 submitted = False
                 for selector in submit_selectors:
@@ -351,8 +345,22 @@ class RakutenBlogAPI:
 
                 self._safe_screenshot(page, "publish_result.png")
                 
-                success = True
-                print("Diary post completed successfully!")
+                # STRICT VALIDATION: Check if save or publish succeeded
+                # The page should show success messages like "下書き保存が完了しました" or "日記の投稿が完了しました" or "公開しました"
+                page_content = page.content()
+                success_keywords = ["完了しました", "保存しました", "公開しました", "投稿しました", "続けて下書きを修正する"]
+                
+                if any(kw in page_content for kw in success_keywords):
+                    success = True
+                    print("Diary post completed successfully (confirmed by UI message)!")
+                else:
+                    # Look for potential error messages on the page
+                    error_msg = page.locator('.error, .error-msg, .alert-danger, .err_msg').first
+                    if error_msg.is_visible(timeout=2000):
+                        print(f"Error detected on page: {error_msg.text_content().strip()}")
+                    else:
+                        print("Error: Success message not found on the page, but no explicit error element detected.")
+                    success = False
 
         except Exception as e:
             print(f"Exception during Playwright posting: {e}")
@@ -362,3 +370,4 @@ class RakutenBlogAPI:
                 os.remove(session_path)
 
         return success
+
