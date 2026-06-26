@@ -33,3 +33,4 @@ asia-kobo:10016531
 rugly:10008402
 futon-colors:10000194
 tukumo-style:10000085
+good-select:10017769
