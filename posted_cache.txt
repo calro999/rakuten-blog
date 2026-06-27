@@ -52,3 +52,4 @@ beaubelle:10000831
 air-rhizome:10000417
 soraciel:10011119
 kagu350:10071613
+vegatex-store:10000201
