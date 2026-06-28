@@ -71,3 +71,4 @@ rennkou-syouji:10008760
 mei-li:10002805
 kinonekko:10000033
 hanko-online:10002639
+probasto:10000009
