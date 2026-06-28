@@ -57,3 +57,4 @@ monogallery:10003120
 assistone:10008494
 auc-rmjapan:10000509
 bellemaison-interior:10169539
+takayama-shop:10000470
