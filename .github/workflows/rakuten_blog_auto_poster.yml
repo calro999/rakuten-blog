@@ -3,7 +3,7 @@ name: Rakuten Blog Auto Poster
 on:
   schedule:
     # 4時間ごとに実行
-    - cron: '0 */4 * * *'
+    - cron: '0 */2 * * *'
   workflow_dispatch: # 手動実行も可能にします
 
 jobs:
