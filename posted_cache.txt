@@ -95,3 +95,4 @@ sommelier:10009675
 calmisence:10000070
 hirosho-e-shop:10000447
 pease:10004877
+weiwei:10020393
