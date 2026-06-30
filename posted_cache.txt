@@ -102,3 +102,4 @@ ablana:10009360
 the-green:10000045
 pease:10005500
 e-life-market:10000010
+confis-shop:10000220
