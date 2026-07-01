@@ -104,3 +104,4 @@ pease:10005500
 e-life-market:10000010
 confis-shop:10000220
 yosuzu:10000011
+gekiyasukaguya:10025290
