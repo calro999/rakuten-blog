@@ -343,7 +343,7 @@ def main():
     article_gen.load_model()
     
     title_raw = target_item["title"]
-    clean_title = re.sub(r'【[^】]+】|\[[^\]]+\]', '', title_raw).strip()
+    clean_title = article_gen.get_clean_product_name(title_raw, keyword)
     
     generator_input_item = {
         "title": target_item["title"],

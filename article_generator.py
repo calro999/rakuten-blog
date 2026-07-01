@@ -16,7 +16,8 @@ class ArticleGenerator:
 
     def generate_review_article(self, item: Dict[str, Any]) -> str:
         title = item.get("title", "")
-        clean_title = item.get("clean_title", title)
+        search_keyword = item.get("search_keyword", "")
+        clean_title = self.get_clean_product_name(title, search_keyword)
         price = item.get("price", "")
         caption = item.get("caption", "")
 
@@ -79,9 +80,9 @@ class ArticleGenerator:
 
     def generate_blog_title(self, item: Dict[str, Any]) -> str:
         title = item.get("title", "")
-        clean_title = item.get("clean_title", title)
-        caption = item.get("caption", "")
         search_keyword = item.get("search_keyword", "")
+        clean_title = self.get_clean_product_name(title, search_keyword)
+        caption = item.get("caption", "")
 
         system_prompt = "あなたは読者の目を引き、クリック率（CTR）を最大化するブログ記事タイトルを作成するプロのコピーライターです。日本語で、余計な説明や前置きなしにタイトルテキストのみを出力してください。"
 
@@ -183,13 +184,73 @@ class ArticleGenerator:
         ]
         return random.choice(fallback_patterns)
 
+    def get_clean_product_name(self, title: str, search_keyword: str) -> str:
+        """楽天市場のノイズが多い商品名から、具体的でシンプルな商品名（15文字以内）を抽出する。"""
+        system_prompt = "あなたは入力されたテキストから無駄な修飾語を取り除き、商品名そのもの（名詞）のみを抽出する優秀なアシスタントです。"
+        prompt = f"""以下の楽天市場の商品名から、送料無料、サイズ、型番、アピール用の形容詞（おしゃれ、大人気など）をすべて排除し、その商品が「何であるか」を示す具体的でクリーンな商品名（例：『木枠ウォールミラー』『珪藻土バスマット』『分別ゴミ箱』など）を日本語で15文字以内で抽出してください。
+余計な解説や括弧、引用符、Markdown等は一切含めず、抽出した商品名テキストのみを出力してください。
+
+【楽天市場の商品名】: {title}
+【検索時のキーワード】: {search_keyword}
+"""
+        generators = [
+            ("Gemini API (Free Tier)", self._generate_with_gemini),
+            ("GitHub Models API (Free for Actions/PAT)", self._generate_with_github_models),
+            ("OpenRouter Free API", self._generate_with_openrouter),
+            ("Hugging Face API (Free Tier)", self._generate_with_huggingface),
+            ("Pollinations AI Free (No Key Required)", self._generate_with_pollinations),
+        ]
+
+        for name, gen_fn in generators:
+            try:
+                res = gen_fn(prompt, system_prompt=system_prompt)
+                if res and len(res.strip()) > 1:
+                    cleaned = re.sub(r'<[^>]+>|[\"\'「」『』【】]', '', res).strip()
+                    if cleaned and len(cleaned) <= 18:
+                        return cleaned
+            except Exception:
+                continue
+
+        # --- フォールバック (LLMが全滅した場合のルールベース抽出) ---
+        clean_title = title
+        clean_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', clean_title)
+        
+        noise_words = [
+            "送料無料", "ポイント", "マラソン", "セール", "あす楽", "即納", "公式", "限定", 
+            "国産", "日本製", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", 
+            "おすすめ", "人気", "大容量", "便利", "軽量", "防臭", "抗菌", "消臭", "プチプラ",
+            "スーパーSALE", "お買い物マラソン", "割引", "クーポン", "対象", "％OFF"
+        ]
+        for noise in noise_words:
+            clean_title = clean_title.replace(noise, "")
+            
+        clean_title = re.sub(r'[^a-zA-Z0-9あ-んア-ン一-龠\s\-]', '', clean_title)
+        clean_title = re.sub(r'\s+', ' ', clean_title).strip()
+        
+        words = [w for w in clean_title.split(' ') if w]
+        selected_words = []
+        char_count = 0
+        for w in words:
+            if re.match(r'^[a-zA-Z0-9_\-\.\/]+$', w) and len(w) <= 3:
+                continue
+            if len(selected_words) >= 2 or char_count + len(w) > 15:
+                break
+            selected_words.append(w)
+            char_count += len(w) + 1
+            
+        product_name = " ".join(selected_words).strip()
+        if not product_name or len(product_name) < 2:
+            product_name = search_keyword or "インテリア雑貨"
+            
+        return product_name[:15]
+
     def _generate_with_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             return None
         
         sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを遵守し、余計な挨拶や解説を一切含まないHTML本文のみを出力します。"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{
