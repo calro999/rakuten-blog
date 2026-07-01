@@ -106,3 +106,4 @@ confis-shop:10000220
 yosuzu:10000011
 gekiyasukaguya:10025290
 enn-shop:10001888
+auc-kaei-trading:10000740
