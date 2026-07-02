@@ -14,6 +14,69 @@ class ArticleGenerator:
     def load_model(self):
         print("ArticleGenerator: Initialized using online APIs (Gemini / fallback).")
 
+    def _detect_genre(self, title: str, search_keyword: str) -> str:
+        text = (title + " " + search_keyword).lower()
+        if "ふるさと納税" in text:
+            return "furusato"
+        if any(w in text for w in ["スイーツ", "菓子", "プリン", "ケーキ", "チョコ", "クッキー", "バウムクーヘン", "大福", "どら焼き", "カステラ", "マカロン", "ジェラート", "アイス"]):
+            return "sweets"
+        if any(w in text for w in ["食器", "プレート", "急須", "コップ", "マグカップ", "グラス", "皿", "箸", "カトラリー", "キャニスター", "ボウル"]):
+            return "tableware"
+        if any(w in text for w in ["ラグ", "カーテン", "クッション", "テーブル", "ライト", "ランプ", "ミラー", "鏡", "時計", "収納", "スツール", "棚", "ソファー", "照明", "傘立て", "ハンガー"]):
+            return "interior"
+        return "general"
+
+    def _generate_fallback_article(self, clean_title: str, search_keyword: str, caption: str) -> str:
+        genre = self._detect_genre(clean_title, search_keyword)
+        
+        # 各ジャンルごとに3パターンの自然な文章テンプレートを用意（AI臭さを排除）
+        templates = {
+            "furusato": [
+                f"""<p>地域の魅力やこだわりがぎゅっと詰まった、ふるさと納税の返礼品<b>{clean_title}</b>のご紹介です。丹精込めて作られた特別な一品を、ご自宅で贅沢に楽しむことができます。</p>
+<p>寄付を通じてその土地を応援しながら、普段の生活にちょっとしたご褒美やワクワク感をプラスできるのが嬉しいポイント。実用的なアイテムから美味しいグルメまで、地域の想いを感じられる確かな品質の仕上がりです。</p>""",
+                f"""<p>ふるさと納税の返礼品として高い支持を集める<b>{clean_title}</b>。地域の職人や生産者のこだわりが細部まで行き届いた、非常に完成度の高いアイテムです。</p>
+<p>寄付の返礼として受け取れるだけでなく、長く愛用したくなる実用性と品質をしっかり備えています。ご家族みんなで楽しむのにも、自分への特別なご褒美としても、自信を持っておすすめできる一品です。</p>""",
+                f"""<p>日常の食卓や暮らしに嬉しい彩りを与えてくれる、ふるさと納税の返礼品<b>{clean_title}</b>。その地域ならではの素材や技術がふんだんに使われています。</p>
+<p>ふるさと納税をきっかけに、知らなかった地域の魅力に出会えるのも醍醐味の一つ。毎日の定番として重宝する使い勝手の良さがあり、寄付先との温かい繋がりを感じさせてくれる仕上がりです。</p>"""
+            ],
+            "sweets": [
+                f"""<p>ひとくち食べれば心がふっと軽くなるような、贅沢な味わいの<b>{clean_title}</b>のご紹介です。厳選された素材を贅沢に使い、丁寧な製法で上品に仕上げられています。</p>
+<p>おやつの時間やお茶の席に添えるだけで、テーブルの上が一気に華やぐ魅力的な一品。自分へのご褒美にはもちろん、お世話になっている方へのギフトや手土産としても喜ばれること間違いなしの上質な仕上がりです。</p>""",
+                f"""<p>素材の持ち味や香りを存分に引き出した、極上の<b>{clean_title}</b>。濃厚な味わいと口溶けの良さが際立っており、一口ごとに満足感が広がります。</p>
+<p>お好みのコーヒーや紅茶と一緒にいただくことで、ゆったりとした贅沢なティータイムを演出。見た目にも美しく仕上がっており、日常のちょっとしたひとときを特別に変えてくれるデザートです。</p>""",
+                f"""<p>甘い香りと優しい食感で、大人から子どもまでみんなを笑顔にしてくれる<b>{clean_title}</b>。丁寧な手仕事が感じられる、こだわりのスイーツです。</p>
+<p>甘さのバランスが絶妙でしつこくなく、ついついもう一口と手が伸びてしまう美味しさ。個包装やパッケージのデザインにもこだわっているため、贈り物としても非常に人気のある逸品です。</p>"""
+            ],
+            "tableware": [
+                f"""<p>お料理をいっそう美味しそうに引き立ててくれる、美しい佇まいの器<b>{clean_title}</b>のご紹介です。手になじむ質感と、料理が映える絶妙な色彩が魅力です。</p>
+<p>和食にも洋食にも合わせやすい万能なデザインで、朝食からディナーまで幅広いシーンの食卓で大活躍。見た目の美しさだけでなく、洗いやすさや収納のしやすさといった実用面もしっかり考慮されています。</p>""",
+                f"""<p>食卓の雰囲気を優しく整えてくれる、上品なデザインの<b>{clean_title}</b>。シンプルながらも職人の丁寧な仕事が光る仕上がりとなっています。</p>
+<p>普段使いにはもちろん、大切な来客時のおもてなしにもぴったりな上品さを兼ね備えています。乗せる料理を選ばず、いつものメニューがまるでお店のワンプレートのように上品に仕上がります。</p>""",
+                f"""<p>毎日の食事の時間をより豊かで楽しいものにしてくれる、こだわりの器<b>{clean_title}</b>。しっかりとした厚みと程よい重みがあり、使い勝手は抜群です。</p>
+<p>手作りならではの温かみのある表情があり、使うほどに愛着がわいていく魅力があります。電子レンジや食洗機に対応しているなど、現代のライフスタイルに寄り添った設計も大きなポイントです。</p>"""
+            ],
+            "interior": [
+                f"""<p>空間の雰囲気をすっきりと整え、居心地の良いお部屋づくりをサポートしてくれる<b>{clean_title}</b>のご紹介です。洗練されたフォルムで、どんなインテリアにもしっくり馴染みます。</p>
+<p>目立ちすぎず主張しすぎない程よい存在感があり、置くだけでその場所がおしゃれにまとまるのが特徴。素材の風合いを生かした美しい質感で、お気に入りの空間をより素敵に見せてくれるアイテムです。</p>""",
+                f"""<p>無駄のないスマートなフォルムと、高い実用性を兼ね備えた<b>{clean_title}</b>。毎日の整理整頓や収納を、よりスムーズで快適なものにしてくれます。</p>
+<p>お部屋のテイストを問わず合わせやすいナチュラルな色合いで、インテリアの統一感を損ないません。細部のパーツまで丁寧に加工されており、長く安心して愛用できるしっかりとした頑丈なつくりです。</p>""",
+                f"""<p>温かみのある佇まいで、お部屋に優しいニュアンスをプラスしてくれる<b>{clean_title}</b>。機能性と意匠性を高いレベルで両立させた注目のアイテムです。</p>
+<p>限られたスペースでもすっきりと収まるサイズ設計になっており、玄関やリビング、寝室など様々な場所で使えます。日々の暮らしの動線に優しく溶け込み、お家の中を整然としたクリーンな印象に仕上げます。</p>"""
+            ],
+            "general": [
+                f"""<p>使い手のことを考えて細部まで丁寧に作り込まれた<b>{clean_title}</b>のご紹介です。使い勝手の良いシンプルな形状と、飽きのこないニュートラルな質感が特徴です。</p>
+<p>毎日の何気ない作業や暮らしのワンシーンにそっと寄り添い、確実な機能性でしっかり支えてくれます。どんな環境にも自然と溶け込むため、ご自身の定番アイテムとして長く活躍してくれる仕上がりです。</p>""",
+                f"""<p>機能性と美しいフォルムを兼ね備え、実用的なツールとして非常に優秀な<b>{clean_title}</b>。軽やかな使い心地と扱いやすさが大きな魅力です。</p>
+<p>実際に手に取ってみると、つくりの良さや素材のこだわりが随所に感じられ、確かな安心感があります。面倒な手間を減らし、日々の生活をより軽快でスムーズにするための工夫が凝らされた製品です。</p>""",
+                f"""<p>シンプルでありながら存在感があり、道具としての美しさが光る<b>{clean_title}</b>。無駄な装飾を削ぎ落としたスタイリッシュなデザインです。</p>
+<p>頑丈なつくりで日々のハードな使用にも十分に耐えうる仕様になっており、実用性重視の方にも自信を持っておすすめできます。毎日の暮らしをそっと支えてくれる頼もしい相棒のような存在です。</p>"""
+            ]
+        }
+        
+        # 選択されたジャンルのテンプレートからランダムで1つ選ぶ
+        selected_template = random.choice(templates.get(genre, templates["general"]))
+        return selected_template
+
     def generate_review_article(self, item: Dict[str, Any]) -> str:
         title = item.get("title", "")
         search_keyword = item.get("search_keyword", "")
@@ -45,22 +108,29 @@ class ArticleGenerator:
 
         raw_article = None
         for name, gen_fn in generators:
-            try:
-                print(f"Attempting article generation with {name}...")
-                res = gen_fn(prompt)
-                if res and len(res.strip()) > 150:
-                    raw_article = res.strip()
-                    print(f"Successfully generated article using {name}!")
-                    break
-                else:
-                    print(f"{name} returned empty or too short response. Trying next fallback...")
-            except Exception as e:
-                print(f"Error calling {name}: {e}. Trying next fallback...")
+            for retry_count in range(2):
+                try:
+                    print(f"Attempting article generation with {name} (Attempt {retry_count + 1})...")
+                    res = gen_fn(prompt)
+                    if res and len(res.strip()) > 150:
+                        raw_article = res.strip()
+                        print(f"Successfully generated article using {name}!")
+                        break
+                    else:
+                        print(f"{name} returned empty or too short response.")
+                except Exception as e:
+                    print(f"Error calling {name}: {e}.")
+                
+                if retry_count == 0:
+                    time.sleep(2)
+            if raw_article:
+                break
+            else:
+                print(f"{name} failed after retries. Trying next fallback...")
 
         if not raw_article:
             print("WARNING: All LLM APIs failed or are rate-limited. Generating fallback HTML review text.")
-            raw_article = f"""<p>毎日の暮らしにそっと寄り添い、日常をワンランク快適にしてくれる<b>{clean_title}</b>のご紹介です。このアイテムをお部屋に取り入れることで、おうち時間がグッと心地よくなり、日々の暮らしに嬉しいゆとりが生まれます。</p>
-<p>洗練された佇まいと実用性を兼ね備えており、空間の雰囲気を引き締めながら日常の利便性をしっかりサポート。デザインの美しさはもちろん、細部まで使い勝手を考慮して作られているため、毎日の定番アイテムとして長く愛用できる仕上がりとなっています。</p>"""
+            raw_article = self._generate_fallback_article(clean_title, search_keyword, caption)
 
         # メタ文言のクリーニング
         raw_article = re.sub(r"^(はい、|承知いたしました。|以下が商品紹介記事です。|以下に記事を出力します。|以下が執筆した記事です。)\s*", "", raw_article)
