@@ -1,4 +1,9 @@
 import os
+
+# Force flush all prints for real-time logging in CI/GitHub Actions
+import builtins
+print = lambda *args, **kwargs: builtins.print(*args, flush=True, **kwargs)
+
 import re
 import requests
 import json
