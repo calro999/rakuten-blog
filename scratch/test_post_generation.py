@@ -7,21 +7,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from article_generator import ArticleGenerator
 
 def test_generation():
-    print("=== Testing Post Generation (Dry-run with Clean Product Names) ===")
+    print("=== Testing Post Generation (Furusato Carbonated Water Test) ===")
     
-    # 楽天市場にありがちなノイズの多いリアルな商品データをテスト用に用意
     test_items = [
         {
-            "title": "ゴミ箱 分別 スリム おしゃれ キッチン 縦型 ペダル ペール ダストボックス キャスター付き 収納 45リットル 45L シンプル ホワイト ブラック",
-            "itemCaption": "キッチンの隙間にスッキリ収まるスリムで縦型の分別ゴミ箱。ペダル式なので調理中でも手を汚さずに開閉できます。キャスター付きでゴミ出しや掃除の際の移動もラクラク。スタイリッシュなモノトーンデザインです。",
-            "price": "4,980円",
-            "search_keyword": "分別ゴミ箱"
-        },
-        {
-            "title": "傘立て おしゃれ 北欧 スリム アイアン コンパクト アンブレラスタンド レトロ シンプル アンティーク 玄関収納 傘たて 水受け皿付き ホワイト",
-            "itemCaption": "玄関の限られたスペースにすっきり置ける、スリムでコンパクトなアイアン傘立て。レトロでアンティーク調のデザインが、エントランスをシックに演出します。取り外し可能な水受け皿付きで、お手入れも簡単です。",
-            "price": "2,980円",
-            "search_keyword": "傘立て"
+            "title": "【ふるさと納税】＼35本カートン／ふるさと納税限定 ガイアの夜明けで紹介 すぐ届く VOX 強炭酸水 35本 500ml ラベルレス 選べる ストレート レモン 1箱 2箱 3箱 大容量 炭酸水 ハイボール 割り材 ソーダ 高評価 防災 ふるさと納税 ランキング 6000円以内 まとめ買 炭酸飲料",
+            "itemCaption": "磨き抜かれた純水と炭酸のみを使用した、強炭酸水の35本セット。ラベルレスでエコに配慮し、そのまま飲むのはもちろん、ハイボールや割り材としても最適です。すっきりとしたクリアな喉ごしをお楽しみください。",
+            "price": "6,000円",
+            "search_keyword": "ふるさと納税 炭酸水 ストレート"
         }
     ]
     
@@ -36,7 +29,6 @@ def test_generation():
         clean_name = generator.get_clean_product_name(item["title"], item["search_keyword"])
         print(f"Extracted Clean Name: {clean_name}")
         
-        # モックの入力形式に合わせる
         item_data = {
             "title": item["title"],
             "clean_title": clean_name,
@@ -53,7 +45,7 @@ def test_generation():
         # 3. 楽天ブログの記事本文生成テスト
         print("\n[Generated Blog Article]")
         article = generator.generate_review_article(item_data)
-        print(article)
+        print(article[:1000] + "\n... (truncated for display)")
 
 if __name__ == "__main__":
     test_generation()
