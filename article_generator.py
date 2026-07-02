@@ -331,7 +331,9 @@ class ArticleGenerator:
     def _generate_with_github_models(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
         if not token:
+            print("DEBUG: GITHUB_TOKEN or GH_TOKEN is not set in environment variables.")
             return None
+        print(f"DEBUG: GITHUB_TOKEN/GH_TOKEN is set (length: {len(token)}).")
         
         sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示されたルールを厳格に守り、日本語で前置き・後書きなしでHTML本文のみを出力してください。"
         url = "https://models.inference.ai.azure.com/chat/completions"
@@ -347,18 +349,26 @@ class ArticleGenerator:
             ],
             "temperature": 0.7
         }
-        resp = requests.post(url, headers=headers, json=payload, timeout=30)
-        if resp.status_code == 200:
-            try:
-                return resp.json()["choices"][0]["message"]["content"]
-            except (KeyError, IndexError):
-                return None
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=30)
+            if resp.status_code == 200:
+                try:
+                    return resp.json()["choices"][0]["message"]["content"]
+                except (KeyError, IndexError):
+                    print("DEBUG: GitHub Models API returned status 200 but response format was unexpected.")
+                    return None
+            else:
+                print(f"DEBUG: GitHub Models API HTTP error. status_code={resp.status_code}, response={resp.text}")
+        except Exception as e:
+            print(f"DEBUG: Exception during GitHub Models API call: {e}")
         return None
 
     def _generate_with_openrouter(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
+            print("DEBUG: OPENROUTER_API_KEY is not set in environment variables.")
             return None
+        print(f"DEBUG: OPENROUTER_API_KEY is set (length: {len(api_key)}).")
         
         sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを守り、余計な解説を一切含まない日本語のHTML本文のみを出力します。"
         url = "https://openrouter.ai/api/v1/chat/completions"
@@ -374,13 +384,19 @@ class ArticleGenerator:
             ],
             "temperature": 0.7
         }
-        resp = requests.post(url, headers=headers, json=payload, timeout=30)
-        if resp.status_code == 200:
-            data = resp.json()
-            try:
-                return data["choices"][0]["message"]["content"]
-            except KeyError:
-                return None
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=30)
+            if resp.status_code == 200:
+                data = resp.json()
+                try:
+                    return data["choices"][0]["message"]["content"]
+                except KeyError:
+                    print("DEBUG: OpenRouter API returned status 200 but response format was unexpected.")
+                    return None
+            else:
+                print(f"DEBUG: OpenRouter API HTTP error. status_code={resp.status_code}, response={resp.text}")
+        except Exception as e:
+            print(f"DEBUG: Exception during OpenRouter API call: {e}")
         return None
 
     def _generate_with_huggingface(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
