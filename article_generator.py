@@ -148,36 +148,46 @@ class ArticleGenerator:
 6. 「QOL爆上がり」「生活の質」などの誇張した表現や定型表現は避け、商品の素材感や使い心地、デザイン性を具体的に掘り下げて自然な日本語で表現してください。
 """
 
-        generators = [
-            ("Gemini API (Free Tier)", self._generate_with_gemini),
-            ("GitHub Models API (Free for Actions/PAT)", self._generate_with_github_models),
-            ("OpenRouter Free API", self._generate_with_openrouter),
+        # 呼び出しフロー: Gemini(1回目) -> Pollinations(1回目) -> Gemini(2回目・再試行) -> Pollinations(2回目・再試行)
+        api_flow = [
+            ("Gemini API (Free Tier) - 1回目", self._generate_with_gemini),
+            ("Pollinations AI (ポリゴンGPT) - 1回目", self._generate_with_pollinations),
+            ("Gemini API (Free Tier) - 2回目", self._generate_with_gemini),
+            ("Pollinations AI (ポリゴンGPT) - 2回目", self._generate_with_pollinations),
         ]
 
         raw_article = None
-        for name, gen_fn in generators:
-            for retry_count in range(2):
-                try:
-                    print(f"Attempting article generation with {name} (Attempt {retry_count + 1})...")
-                    res = gen_fn(prompt)
-                    if res and len(res.strip()) > 150:
-                        raw_article = res.strip()
-                        print(f"Successfully generated article using {name}!")
-                        break
-                    else:
-                        print(f"{name} returned empty or too short response.")
-                except Exception as e:
-                    print(f"Error calling {name}: {e}.")
-                
-                if retry_count == 0:
-                    time.sleep(2)
-            if raw_article:
-                break
-            else:
-                print(f"{name} failed after retries. Trying next fallback...")
+        error_logs = []
+        
+        for name, gen_fn in api_flow:
+            try:
+                print(f"Attempting article generation with {name}...")
+                res = gen_fn(prompt)
+                if res and len(res.strip()) > 150:
+                    raw_article = res.strip()
+                    print(f"Successfully generated article using {name}!")
+                    break
+                else:
+                    msg = f"【{name}】空の応答、または150文字未満の短い文章が返されました。"
+                    print(msg)
+                    error_logs.append(msg)
+            except Exception as e:
+                msg = f"【{name}】呼び出し処理中にエラーが発生しました: {str(e)}"
+                print(msg)
+                error_logs.append(msg)
+            
+            # APIの連続アクセスによる拒否を避けるために待機
+            time.sleep(2)
 
         if not raw_article:
-            raise RuntimeError("All LLM APIs failed or are rate-limited for review article generation. Stopping process to allow retry.")
+            # 発生したエラー詳細を改行でまとめる
+            error_details = "\n".join(error_logs)
+            raise RuntimeError(
+                f"\n=== [エラー] 全てのAIサービスでの記事生成が失敗しました ===\n"
+                f"【各APIの失敗詳細ログ】:\n{error_details}\n"
+                f"========================================================\n"
+                f"※SEO的に低品質な同一テンプレート記事の投稿を防ぐため、本処理をエラーで中断し再実行させます。"
+            )
 
         # メタ文言のクリーニング
         raw_article = re.sub(r"^(はい、|承知いたしました。|以下が商品紹介記事です。|以下に記事を出力します。|以下が執筆した記事です。)\s*", "", raw_article)
@@ -216,25 +226,41 @@ class ArticleGenerator:
 5. HTMLタグ（<h2>など）やマークダウン記法、引用符（「」や【】、" など）は一切含めず、プレーンテキストのみで出力してください。
 6. 出力はタイトルのみとし、前置きや解説などは一切含めないでください。
 """
-        generators = [
-            ("Gemini API (Free Tier)", self._generate_with_gemini),
-            ("GitHub Models API (Free for Actions/PAT)", self._generate_with_github_models),
-            ("OpenRouter Free API", self._generate_with_openrouter),
+        # 呼び出しフロー: Gemini(1回目) -> Pollinations(1回目) -> Gemini(2回目・再試行) -> Pollinations(2回目・再試行)
+        api_flow = [
+            ("Gemini API (Free Tier) - 1回目", self._generate_with_gemini),
+            ("Pollinations AI (ポリゴンGPT) - 1回目", self._generate_with_pollinations),
+            ("Gemini API (Free Tier) - 2回目", self._generate_with_gemini),
+            ("Pollinations AI (ポリゴンGPT) - 2回目", self._generate_with_pollinations),
         ]
 
-        for name, gen_fn in generators:
+        error_logs = []
+        for name, gen_fn in api_flow:
             try:
+                print(f"Attempting title generation with {name}...")
                 res = gen_fn(prompt, system_prompt=system_prompt)
                 if res and len(res.strip()) > 3:
                     clean_res = re.sub(r'<[^>]+>|[\"\'「」『』【】]', '', res).strip()
                     if clean_res:
                         return clean_res[:40]
+                else:
+                    msg = f"【{name}】空または3文字未満の短いタイトルが返されました。"
+                    print(msg)
+                    error_logs.append(msg)
             except Exception as e:
-                print(f"Error in {name} during title generation: {e}")
-                continue
+                msg = f"【{name}】タイトル生成中にエラーが発生しました: {str(e)}"
+                print(msg)
+                error_logs.append(msg)
+            
+            time.sleep(2)
 
-        # --- フォールバック (LLMが全滅した場合は例外を投げる) ---
-        raise RuntimeError("All LLM APIs failed or are rate-limited for blog title generation. Stopping process to allow retry.")
+        # 全滅した場合は例外を投げる
+        error_details = "\n".join(error_logs)
+        raise RuntimeError(
+            f"\n=== [エラー] 全てのAIサービスでのタイトル生成が失敗しました ===\n"
+            f"【各APIの失敗詳細ログ】:\n{error_details}\n"
+            f"========================================================\n"
+        )
 
     def get_clean_product_name(self, title: str, search_keyword: str) -> str:
         """楽天市場のノイズが多い商品名から、具体的でシンプルな商品名（15文字以内）を抽出する。"""
@@ -305,9 +331,25 @@ class ArticleGenerator:
             
         return product_name[:15]
 
+    def _translate_error_message(self, name: str, status_code: int, response_text: str) -> str:
+        """APIのエラーレスポンスを分かりやすい日本語に翻訳・解説する"""
+        if status_code == 401:
+            if "models" in response_text:
+                return f"【{name}】認証エラー(401): GITHUB_TOKEN のモデル使用権限（models permission）が不足しています。明示的に作成したパーソナルアクセストークン（PAT）が必要です。"
+            return f"【{name}】認証エラー(401): APIキーが無効であるか、正しく設定されていません。環境変数（GEMINI_API_KEYなど）の値を確認してください。"
+        elif status_code == 403:
+            return f"【{name}】アクセス拒否エラー(403): サービスへのアクセスが拒否されました。APIキーの権限やプラン制限を確認してください。"
+        elif status_code == 429:
+            return f"【{name}】リクエスト上限エラー(429): 無料枠または利用制限（レートリミット）に達しました。しばらく時間（数十秒〜数分）をおいてからタスクを再実行してください。"
+        elif status_code in [500, 502, 503]:
+            return f"【{name}】サーバーエラー({status_code}): AI服务側のサーバーが混雑しているか、メンテナンス中です。時間をおいて再実行してください。"
+        else:
+            return f"【{name}】通信エラー({status_code}): レスポンス内容: {response_text}"
+
     def _generate_with_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
+            print("DEBUG: 【Gemini API】GEMINI_API_KEY が環境変数に設定されていません。")
             return None
         
         sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを遵守し、余計な挨拶や解説を一切含まないHTML本文のみを出力します。"
@@ -324,13 +366,20 @@ class ArticleGenerator:
                 "maxOutputTokens": 2000
             }
         }
-        resp = requests.post(url, headers=headers, json=payload, timeout=30)
-        if resp.status_code == 200:
-            data = resp.json()
-            try:
-                return data["candidates"][0]["content"]["parts"][0]["text"]
-            except KeyError:
-                return None
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=30)
+            if resp.status_code == 200:
+                data = resp.json()
+                try:
+                    return data["candidates"][0]["content"]["parts"][0]["text"]
+                except KeyError:
+                    print("DEBUG: 【Gemini API】ステータスは200ですが、想定外のレスポンス形式が返されました。")
+                    return None
+            else:
+                err_msg = self._translate_error_message("Gemini API", resp.status_code, resp.text)
+                print(f"DEBUG: {err_msg}")
+        except Exception as e:
+            print(f"DEBUG: 【Gemini API】呼び出し中に通信エラーが発生しました: {e}")
         return None
 
     def _generate_with_github_models(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
@@ -371,9 +420,8 @@ class ArticleGenerator:
     def _generate_with_openrouter(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
-            print("DEBUG: OPENROUTER_API_KEY is not set in environment variables.")
+            print("DEBUG: 【OpenRouter API】OPENROUTER_API_KEY が環境変数に設定されていません。")
             return None
-        print(f"DEBUG: OPENROUTER_API_KEY is set (length: {len(api_key)}).")
         
         sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを守り、余計な解説を一切含まない日本語のHTML本文のみを出力します。"
         url = "https://openrouter.ai/api/v1/chat/completions"
@@ -396,12 +444,13 @@ class ArticleGenerator:
                 try:
                     return data["choices"][0]["message"]["content"]
                 except KeyError:
-                    print("DEBUG: OpenRouter API returned status 200 but response format was unexpected.")
+                    print("DEBUG: 【OpenRouter API】ステータスは200ですが、想定外のレスポンス形式が返されました。")
                     return None
             else:
-                print(f"DEBUG: OpenRouter API HTTP error. status_code={resp.status_code}, response={resp.text}")
+                err_msg = self._translate_error_message("OpenRouter API", resp.status_code, resp.text)
+                print(f"DEBUG: {err_msg}")
         except Exception as e:
-            print(f"DEBUG: Exception during OpenRouter API call: {e}")
+            print(f"DEBUG: 【OpenRouter API】呼び出し中に通信エラーが発生しました: {e}")
         return None
 
     def _generate_with_huggingface(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
@@ -452,9 +501,12 @@ class ArticleGenerator:
                 resp = requests.post(url, json=payload, timeout=25)
                 if resp.status_code == 200 and len(resp.text.strip()) > 5:
                     return resp.text
-                elif resp.status_code == 429:
-                    time.sleep(attempt+2)
-            except Exception:
-                pass
+                else:
+                    err_msg = self._translate_error_message(f"Pollinations AI ({model})", resp.status_code, resp.text)
+                    print(f"DEBUG: {err_msg}")
+                    if resp.status_code == 429:
+                        time.sleep(attempt+2)
+            except Exception as e:
+                print(f"DEBUG: 【Pollinations AI ({model})】通信エラーが発生しました: {e}")
             
         return None
