@@ -172,8 +172,7 @@ class ArticleGenerator:
                 print(f"{name} failed after retries. Trying next fallback...")
 
         if not raw_article:
-            print("WARNING: All LLM APIs failed or are rate-limited. Generating fallback HTML review text.")
-            raw_article = self._generate_fallback_article(clean_title, search_keyword, caption)
+            raise RuntimeError("All LLM APIs failed or are rate-limited for review article generation. Stopping process to allow retry.")
 
         # メタ文言のクリーニング
         raw_article = re.sub(r"^(はい、|承知いたしました。|以下が商品紹介記事です。|以下に記事を出力します。|以下が執筆した記事です。)\s*", "", raw_article)
@@ -229,102 +228,8 @@ class ArticleGenerator:
                 print(f"Error in {name} during title generation: {e}")
                 continue
 
-        # --- フォールバックロジック (LLMが全滅した場合) ---
-        genre = self._detect_genre(clean_title, search_keyword)
-
-        # 1. 検索キーワードから修飾語（北欧、おしゃれ等）を取り除き、クリーンなカテゴリ名を作る
-        clean_keyword = search_keyword
-        for modifier in [
-            "北欧", "おしゃれ", "モダン", "静音", "洗える", "来客用", "分別", 
-            "LED", "木製", "ガラス", "フェイク", "グリーン", "収納", "インテリア", "雑貨",
-            "ふるさと納税", "ふるさと", "カートン", "カトン"
-        ]:
-            clean_keyword = clean_keyword.replace(modifier, "")
-        clean_keyword = re.sub(r'\s+', ' ', clean_keyword).strip()
-
-        # 2. 商品タイトルから記号・ノイズを徹底的に除去し、商品名らしき部分を切り出す
-        short_title = clean_title
-        short_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', short_title)
-        
-        noise_words = [
-            "送料無料", "ポイント消化", "マラソン開催中", "マラソン", "全11種類", "日本製", "国産", 
-            "公式", "限定", "あす楽", "即納", "スーパーSALE", "お買い物マラソン", "最大1000円OFF", "クーポン",
-            "プチプラ", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", "レトロ", "デザイン",
-            "おすすめ", "人気", "大容量", "便利", "実用性", "機能的", "軽量", "静音", "洗える", "来客用",
-            "光触媒", "CT触媒", "消臭", "抗菌", "防臭", "全20種", "20種",
-            "ふるさと納税", "ふるさと", "カートン", "カトン", "ガイアの夜明け"
-        ]
-        for noise in noise_words:
-            short_title = short_title.replace(noise, "")
-            
-        short_title = re.sub(r'\s+', ' ', short_title).strip()
-        
-        # スペースで分割して最初の2単語を結合（具体的な商品名を狙う）
-        words = [w for w in short_title.split(' ') if w]
-        selected_words = []
-        char_count = 0
-        for w in words:
-            # 記号や短いサイズ表記・型番などをスキップ
-            if re.match(r'^[a-zA-Z0-9_\-\.\/]+$', w) and len(w) <= 3:
-                continue
-            if len(selected_words) >= 2 or char_count + len(w) > 20:
-                break
-            selected_words.append(w)
-            char_count += len(w) + 1
-            
-        product_name = " ".join(selected_words).strip()
-        
-        # 3. 抽出した製品名に販促用ノイズ（「倍」「%」「OFF」「割引」「円」「エントリー」「対象」など）や
-        # 数字と記号の組み合わせが含まれている場合は、その抽出結果を捨てて、クリーンな検索キーワードを商品名とする
-        promo_patterns = [
-            r'倍', r'%', r'％', r'OFF', r'off', r'割引', r'円', r'エントリー', r'対象', 
-            r'\+', r'\d+L', r'\d+l', r'\d+リットル', r'\d+分別', r'\d+種', r'最大'
-        ]
-        is_invalid_product = False
-        if product_name:
-            for pattern in promo_patterns:
-                if re.search(pattern, product_name):
-                    is_invalid_product = True
-                    break
-        
-        if is_invalid_product or not product_name or "ふるさと" in product_name:
-            product_name = clean_keyword or "おすすめアイテム"
-
-        # 4. 嘘のレビュー（「使ってみた感想」など）を含まない、ジャンルに応じた自然なタイトル
-        genre_titles = {
-            "furusato": [
-                f"毎日の暮らしに嬉しい「{product_name}」の魅力とおすすめポイント",
-                f"ふるさと納税で楽しむ贅沢な味わい「{product_name}」のご紹介",
-                f"実用性と満足度で選ぶ「{product_name}」の注目ポイントを解説",
-                f"毎日の食卓や生活を豊かにする「{product_name}」の上手な取り入れ方"
-            ],
-            "sweets": [
-                f"至福のティータイムに！「{product_name}」の魅力とこだわりポイント",
-                f"自分へのご褒美やギフトに最適な「{product_name}」をご紹介",
-                f"贅沢な甘みと食感を楽しむ「{product_name}」の美味しさまとめ",
-                f"ちょっと特別な日に味わいたい極上スイーツ「{product_name}」"
-            ],
-            "tableware": [
-                f"毎日の食卓を美しく彩る「{product_name}」の魅力と使い勝手",
-                f"お料理を引き立てるおしゃれな器「{product_name}」のご紹介",
-                f"実用性と美しさを兼ね備えた「{product_name}」の注目ポイント",
-                f"暮らしに寄り添うお気に入りの食器「{product_name}」"
-            ],
-            "interior": [
-                f"おうち時間を快適にする「{product_name}」の魅力と機能性のまとめ",
-                f"暮らしをもっと心地よく！「{product_name}」を取り入れたお部屋作りのアイデア",
-                f"実用性と美しさを備えた「{product_name}」の注目ポイントを解説",
-                f"お部屋の雰囲気を整える「{product_name}」の上手な取り入れ方"
-            ],
-            "general": [
-                f"日々の暮らしを快適にする「{product_name}」の魅力とおすすめポイント",
-                f"実用性とデザイン性を備えた「{product_name}」のご紹介",
-                f"毎日の生活を豊かにする「{product_name}」の注目機能まとめ",
-                f"暮らしをもっと便利にする「{product_name}」の上手な取り入れ方"
-            ]
-        }
-        fallback_patterns = genre_titles.get(genre, genre_titles["general"])
-        return random.choice(fallback_patterns)
+        # --- フォールバック (LLMが全滅した場合は例外を投げる) ---
+        raise RuntimeError("All LLM APIs failed or are rate-limited for blog title generation. Stopping process to allow retry.")
 
     def get_clean_product_name(self, title: str, search_keyword: str) -> str:
         """楽天市場のノイズが多い商品名から、具体的でシンプルな商品名（15文字以内）を抽出する。"""
