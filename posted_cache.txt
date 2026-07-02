@@ -144,3 +144,4 @@ f192023-fujiyoshida:10001663
 tateshina:10000202
 sweet-sanjo:10000032
 roomy:10014681
+asia-kobo:10018575
