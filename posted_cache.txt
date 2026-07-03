@@ -152,3 +152,4 @@ f016918-betsukai:10003150
 yumekaboutakara:10000000
 f302040-arida:10000003
 kamejirushi:10000378
+f192058-yamanashi:10001588
