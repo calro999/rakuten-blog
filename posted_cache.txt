@@ -163,3 +163,4 @@ quelle-applepie:10000002
 luminous-club:10008301
 tennenlife:10001394
 f016918-betsukai:10000337
+ashop:10004548
