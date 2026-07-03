@@ -168,3 +168,4 @@ lefoyer-kurashikiclass:10000008
 k-hana:10000596
 f452017-miyazaki:10001155
 glv:10106558
+f205907-iizuna:10001093
