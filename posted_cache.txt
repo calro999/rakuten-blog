@@ -167,3 +167,4 @@ ashop:10004548
 lefoyer-kurashikiclass:10000008
 k-hana:10000596
 f452017-miyazaki:10001155
+glv:10106558
