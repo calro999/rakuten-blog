@@ -166,3 +166,4 @@ f016918-betsukai:10000337
 ashop:10004548
 lefoyer-kurashikiclass:10000008
 k-hana:10000596
+f452017-miyazaki:10001155
