@@ -165,3 +165,4 @@ tennenlife:10001394
 f016918-betsukai:10000337
 ashop:10004548
 lefoyer-kurashikiclass:10000008
+k-hana:10000596
