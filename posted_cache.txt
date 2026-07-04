@@ -177,3 +177,4 @@ noto-fureai:10000158
 alamode:10026774
 ayuwara:10081356
 sanoken:10000069
+f452017-miyazaki:10000645
