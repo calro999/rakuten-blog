@@ -353,7 +353,7 @@ class ArticleGenerator:
             return None
         
         sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを遵守し、余計な挨拶や解説を一切含まないHTML本文のみを出力します。"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{
@@ -430,7 +430,7 @@ class ArticleGenerator:
             "Content-Type": "application/json"
         }
         payload = {
-            "model": "google/gemma-2-9b-it:free",
+            "model": "google/gemini-2.5-flash:free",
             "messages": [
                 {"role": "system", "content": sys_msg},
                 {"role": "user", "content": prompt}
@@ -486,7 +486,7 @@ class ArticleGenerator:
 
     def _generate_with_pollinations(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         url = "https://text.pollinations.ai/"
-        models = ["openai", "qwen", "mistral"]
+        models = [None, "openai"]
         
         sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示されたルールを厳格に守り、日本語で前置き・後書きなしでHTML本文のみを出力してください。"
         for attempt, model in enumerate(models):
@@ -494,19 +494,22 @@ class ArticleGenerator:
                 "messages": [
                     {"role": "system", "content": sys_msg},
                     {"role": "user", "content": prompt}
-                ],
-                "model": model
+                ]
             }
+            if model:
+                payload["model"] = model
+                
+            model_name_log = model if model else "Default"
             try:
                 resp = requests.post(url, json=payload, timeout=25)
                 if resp.status_code == 200 and len(resp.text.strip()) > 5:
                     return resp.text
                 else:
-                    err_msg = self._translate_error_message(f"Pollinations AI ({model})", resp.status_code, resp.text)
+                    err_msg = self._translate_error_message(f"Pollinations AI ({model_name_log})", resp.status_code, resp.text)
                     print(f"DEBUG: {err_msg}")
                     if resp.status_code == 429:
                         time.sleep(attempt+2)
             except Exception as e:
-                print(f"DEBUG: 【Pollinations AI ({model})】通信エラーが発生しました: {e}")
+                print(f"DEBUG: 【Pollinations AI ({model_name_log})】通信エラーが発生しました: {e}")
             
         return None
