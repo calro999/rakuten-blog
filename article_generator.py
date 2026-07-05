@@ -148,11 +148,15 @@ class ArticleGenerator:
 6. 「QOL爆上がり」「生活の質」などの誇張した表現や定型表現は避け、商品の素材感や使い心地、デザイン性を具体的に掘り下げて自然な日本語で表現してください。
 """
 
-        # 呼び出しフロー: Gemini(1回目) -> Pollinations(1回目) -> Gemini(2回目・再試行) -> Pollinations(2回目・再試行)
+        # 呼び出しフロー: 各種APIをフォールバックとして順に実行
         api_flow = [
             ("Gemini API (Free Tier) - 1回目", self._generate_with_gemini),
+            ("OpenRouter Free API - 1回目", self._generate_with_openrouter),
+            ("GitHub Models API - 1回目", self._generate_with_github_models),
+            ("HuggingFace API - 1回目", self._generate_with_huggingface),
             ("Pollinations AI (ポリゴンGPT) - 1回目", self._generate_with_pollinations),
             ("Gemini API (Free Tier) - 2回目", self._generate_with_gemini),
+            ("OpenRouter Free API - 2回目", self._generate_with_openrouter),
             ("Pollinations AI (ポリゴンGPT) - 2回目", self._generate_with_pollinations),
         ]
 
@@ -226,11 +230,15 @@ class ArticleGenerator:
 5. HTMLタグ（<h2>など）やマークダウン記法、引用符（「」や【】、" など）は一切含めず、プレーンテキストのみで出力してください。
 6. 出力はタイトルのみとし、前置きや解説などは一切含めないでください。
 """
-        # 呼び出しフロー: Gemini(1回目) -> Pollinations(1回目) -> Gemini(2回目・再試行) -> Pollinations(2回目・再試行)
+        # 呼び出しフロー: 各種APIをフォールバックとして順に実行
         api_flow = [
             ("Gemini API (Free Tier) - 1回目", self._generate_with_gemini),
+            ("OpenRouter Free API - 1回目", self._generate_with_openrouter),
+            ("GitHub Models API - 1回目", self._generate_with_github_models),
+            ("HuggingFace API - 1回目", self._generate_with_huggingface),
             ("Pollinations AI (ポリゴンGPT) - 1回目", self._generate_with_pollinations),
             ("Gemini API (Free Tier) - 2回目", self._generate_with_gemini),
+            ("OpenRouter Free API - 2回目", self._generate_with_openrouter),
             ("Pollinations AI (ポリゴンGPT) - 2回目", self._generate_with_pollinations),
         ]
 
@@ -430,7 +438,7 @@ class ArticleGenerator:
             "Content-Type": "application/json"
         }
         payload = {
-            "model": "google/gemini-2.5-flash:free",
+            "model": "openrouter/free",
             "messages": [
                 {"role": "system", "content": sys_msg},
                 {"role": "user", "content": prompt}
