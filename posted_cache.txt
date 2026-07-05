@@ -190,3 +190,4 @@ cherircoco:10002868
 mishinkobo:10000265
 f016683-shiranuka:10000290
 asia-kobo:10015102
+tokachi-chiffon:10000002
