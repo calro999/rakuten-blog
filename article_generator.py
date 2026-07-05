@@ -437,29 +437,39 @@ class ArticleGenerator:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
-        payload = {
-            "model": "openrouter/free",
-            "messages": [
-                {"role": "system", "content": sys_msg},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.7
-        }
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=30)
-            if resp.status_code == 200:
-                data = resp.json()
-                try:
-                    return data["choices"][0]["message"]["content"]
-                except KeyError:
-                    print("DEBUG: 【OpenRouter API】ステータスは200ですが、想定外のレスポンス形式が返されました。")
-                    return None
-            else:
-                err_msg = self._translate_error_message("OpenRouter API", resp.status_code, resp.text)
-                print(f"DEBUG: {err_msg}")
-        except Exception as e:
-            print(f"DEBUG: 【OpenRouter API】呼び出し中に通信エラーが発生しました: {e}")
+        models = [
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "qwen/qwen-2.5-72b-instruct:free",
+            "openrouter/free"
+        ]
+        
+        for model in models:
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": sys_msg},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.7
+            }
+            try:
+                print(f"DEBUG: 【OpenRouter API】Using model: {model}")
+                resp = requests.post(url, headers=headers, json=payload, timeout=30)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    try:
+                        content = data["choices"][0]["message"]["content"]
+                        if content and len(content.strip()) > 5:
+                            return content
+                    except KeyError:
+                        print(f"DEBUG: 【OpenRouter API】Model {model} returned status 200 but response format was unexpected.")
+                else:
+                    err_msg = self._translate_error_message(f"OpenRouter API ({model})", resp.status_code, resp.text)
+                    print(f"DEBUG: {err_msg}")
+            except Exception as e:
+                print(f"DEBUG: 【OpenRouter API ({model})】呼び出し中に通信エラーが発生しました: {e}")
         return None
+
 
     def _generate_with_huggingface(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("HF_API_KEY") or os.environ.get("HF_TOKEN")
