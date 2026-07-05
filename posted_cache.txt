@@ -192,3 +192,4 @@ f016683-shiranuka:10000290
 asia-kobo:10015102
 tokachi-chiffon:10000002
 f092011-utsunomiya:10000678
+tokachi-chiffon:10000007
