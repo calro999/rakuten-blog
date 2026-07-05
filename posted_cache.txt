@@ -196,3 +196,4 @@ tokachi-chiffon:10000007
 f042056-kesennuma:10001682
 panel-c:10001034
 oyaizu:10000732
+f272132-izumisano:10008526
