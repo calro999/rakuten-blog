@@ -195,3 +195,4 @@ f092011-utsunomiya:10000678
 tokachi-chiffon:10000007
 f042056-kesennuma:10001682
 panel-c:10001034
+oyaizu:10000732
