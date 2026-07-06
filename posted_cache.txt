@@ -205,3 +205,4 @@ f173860-hodatsushimizu:10000450
 dcxyakata:10048611
 minamigaoka:10000730
 f406104-fukuchi:10000890
+minamigaoka:10000445
