@@ -236,3 +236,4 @@ naito-frame:10022557
 shimoyama-onlineshop:10001522
 zakkashop:10019223
 panel-c:10000151
+kawamotoya:10000890
