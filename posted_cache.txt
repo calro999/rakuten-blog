@@ -229,3 +229,4 @@ lucas:10000002
 younghouse:10000080
 senka-land:10006420
 f192023-fujiyoshida:10001676
+f182028-tsuruga:10000460
