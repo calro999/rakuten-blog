@@ -238,3 +238,4 @@ zakkashop:10019223
 panel-c:10000151
 kawamotoya:10000890
 selene-:10019575
+kasyou-morin:10000042
