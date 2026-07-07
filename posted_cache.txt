@@ -233,3 +233,4 @@ f182028-tsuruga:10000460
 auc-risecreation:10004524
 livingut:10157436
 naito-frame:10022557
+shimoyama-onlineshop:10001522
