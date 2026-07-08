@@ -264,3 +264,4 @@ kagetudo:10000449
 f292010-nara:10000275
 asia-kobo:10015012
 bellezzavoce:10001279
+kcc-brand:10000060
