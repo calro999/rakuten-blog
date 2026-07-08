@@ -269,3 +269,4 @@ issindo-osaka:10000027
 f033812-kanegasaki:10000063
 samapitistore555:10001790
 store-marufuku:10025613
+blueman:10005901
