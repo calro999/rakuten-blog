@@ -250,3 +250,4 @@ haidihaidi:10002036
 kcc-brand:10000020
 kamejirushi:10000380
 selene-:10019578
+f032026-miyako:10000386
