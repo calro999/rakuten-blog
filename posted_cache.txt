@@ -276,3 +276,4 @@ lifeonproducts:10000050
 f465305-tokunoshima:10000138
 cocogaii:10000517
 sun-wa:10007437
+f032093-ichinoseki:10000219
