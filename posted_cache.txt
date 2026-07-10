@@ -295,3 +295,4 @@ serendip-takasaki:10000002
 f012025-hakodate:10001231
 roomy:10015735
 zakkaya-bigsmiles:10000128
+interiorshopfit:10011516
