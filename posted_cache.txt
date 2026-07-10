@@ -298,3 +298,4 @@ zakkaya-bigsmiles:10000128
 interiorshopfit:10011516
 naito-frame:10022343
 f062014-yamagata:10006115
+f452025-miyakonojo:10000288
