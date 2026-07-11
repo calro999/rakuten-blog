@@ -305,3 +305,4 @@ syokoku-umaimonomeguri:10001044
 tidoriya:10011664
 namagateauauchocolat:10000003
 esupply:10100687
+mugigokoro:10002016
