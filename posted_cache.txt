@@ -304,3 +304,4 @@ f454052-kawaminami:10000558
 syokoku-umaimonomeguri:10001044
 tidoriya:10011664
 namagateauauchocolat:10000003
+esupply:10100687
