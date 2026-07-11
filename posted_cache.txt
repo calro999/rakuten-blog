@@ -307,3 +307,4 @@ namagateauauchocolat:10000003
 esupply:10100687
 mugigokoro:10002016
 cyberl2010:10001141
+gossipstar:10008757
