@@ -314,3 +314,4 @@ f261009-kyoto:10007427
 f453617-takaharu:10000620
 tokyoruskshop:10000333
 futon-colors:10000247
+f222071-fujinomiya:10000026
