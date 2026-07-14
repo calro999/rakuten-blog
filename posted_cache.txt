@@ -345,3 +345,4 @@ shop-conaffetto:10000024
 greek-yogurt:10000062
 kyoto-yamaguchi:10000037
 auc-qualial:10025870
+kaneyama23137:10000018
