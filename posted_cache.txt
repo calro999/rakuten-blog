@@ -343,3 +343,4 @@ mazazulamp:10000001
 primeavenue:10000625
 shop-conaffetto:10000024
 greek-yogurt:10000062
+kyoto-yamaguchi:10000037
