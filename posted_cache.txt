@@ -360,3 +360,4 @@ nakajimataishodo:10000065
 f212016-gifu:10000175
 lgcity:10001537
 selectshop-one:10002455
+f382132-shikokuchuo:10000001
