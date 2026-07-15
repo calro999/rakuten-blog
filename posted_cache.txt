@@ -352,3 +352,4 @@ leblanc:10000160
 kamejirushi:10000376
 kcc-brand:10000055
 f454052-kawaminami:10001091
+desklabo:10002340
