@@ -359,3 +359,4 @@ f462241-isa:10000016
 nakajimataishodo:10000065
 f212016-gifu:10000175
 lgcity:10001537
+selectshop-one:10002455
