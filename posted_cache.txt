@@ -415,3 +415,4 @@ f462195-itikikusikino:10000937
 f452025-miyakonojo:10001370
 tsujirihei:10000275
 rainbow-interior:10001272
+manten:10012350
