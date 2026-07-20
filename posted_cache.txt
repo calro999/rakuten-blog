@@ -416,3 +416,4 @@ f452025-miyakonojo:10001370
 tsujirihei:10000275
 rainbow-interior:10001272
 manten:10012350
+latuna:10000067
