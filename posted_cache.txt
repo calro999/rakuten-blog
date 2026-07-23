@@ -445,3 +445,4 @@ shinbido:10005122
 urokoya:10000027
 f042056-kesennuma:10002193
 rorian:10002421
+kaguemon:10040435
