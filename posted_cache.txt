@@ -481,3 +481,4 @@ advance-r-ec:10000003
 f082228-kashima:10000818
 f032093-ichinoseki:10000218
 sankin-asaichi:10055540
+f454061-tsuno:10000010
