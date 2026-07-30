@@ -511,3 +511,4 @@ f043419-marumori:10000332
 abfly:10040504
 sgmp:10000125
 fruit-umeda:10000000
+marukajiri-kyushu:10000387
