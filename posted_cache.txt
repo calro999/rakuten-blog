@@ -514,3 +514,4 @@ fruit-umeda:10000000
 marukajiri-kyushu:10000387
 well-time:10000155
 monsier-masuno:10000568
+f043419-marumori:10000447
