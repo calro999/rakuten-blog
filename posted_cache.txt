@@ -523,3 +523,4 @@ konigs-krone:10000364
 f422088-matsuura:10000052
 yoakeya-honten:10000166
 choeido:10000037
+f221309-hamamatsu:10004164
