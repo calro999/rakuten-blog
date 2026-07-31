@@ -525,3 +525,4 @@ yoakeya-honten:10000166
 choeido:10000037
 f221309-hamamatsu:10004164
 f401307-fukuoka:10000231
+rennkou-syouji:10003071
