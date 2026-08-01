@@ -539,3 +539,4 @@ gaku-yasui:10000612
 ragmatst:10001521
 f192058-yamanashi:10001596
 kcc-brand:10000043
+assistone:10007088
