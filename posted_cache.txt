@@ -548,3 +548,4 @@ shinbido:10005119
 c-syndicate:10005883
 f192023-fujiyoshida:10000414
 f192015-kofu:10005345
+henri-charpentier:10000674
