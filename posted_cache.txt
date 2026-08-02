@@ -542,3 +542,4 @@ kcc-brand:10000043
 assistone:10007088
 sanpaku:10000002
 f222038-numazu:10001912
+femtechusagi:10009843
