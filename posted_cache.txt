@@ -567,3 +567,4 @@ f403458-shingu:10001234
 hanshoya:10000196
 atgarden:10002796
 kamejirushi:10000381
+senka-land:10002057
