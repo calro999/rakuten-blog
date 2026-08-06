@@ -97,8 +97,7 @@ def generate_keyword() -> str:
 def fetch_rakuten_items(app_id: str, access_key: str, affiliate_id: str, keyword: str) -> list:
     """楽天市場の商品検索APIからインテリア・雑貨商品を取得。"""
     if not app_id or app_id.startswith("DUMMY"):
-        print("Rakuten App ID not set. Using mock data for local dry-run.")
-        return get_mock_items(keyword)
+        raise ValueError("Error: RAKUTEN_APP_ID environment variable is not set. Please set a valid RAKUTEN_APP_ID in your environment or .env file.")
 
     print(f"Searching with Keyword: {keyword}")
 
