@@ -328,30 +328,25 @@ def main():
     posted_cache = load_cache()
     print(f"Loaded {len(posted_cache)} posted items from cache.")
 
-    # 3. 楽天市場から商品を検索 (最大3回リトライ)
-    items = []
-    for attempt in range(3):
+    # 3. 楽天市場から商品を検索し、未投稿の商品を探す（最大10回リトライ）
+    target_item = None
+    for attempt in range(10):
         if attempt > 0:
-            time.sleep(2)
+            time.sleep(1)
+            keyword = generate_keyword()
+        print(f"Attempt {attempt + 1}: Searching with keyword '{keyword}'...")
         items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, keyword)
         if items:
+            for item in items:
+                if item["itemCode"] not in posted_cache:
+                    target_item = item
+                    break
+        if target_item:
             break
-        print(f"Warning: No items found for '{keyword}'. Retrying with another keyword...")
-        keyword = generate_keyword()
-
-    if not items:
-        print("Error: No items found from Rakuten API after retries.")
-        sys.exit(1)
-
-    # 4. 未投稿の商品をフィルタリング
-    target_item = None
-    for item in items:
-        if item["itemCode"] not in posted_cache:
-            target_item = item
-            break
+        print(f"No new unposted items found for '{keyword}'. Retrying with another keyword...")
 
     if not target_item:
-        print("All fetched items are already posted. Finished.")
+        print("Warning: Could not find any unposted items after multiple attempts.")
         sys.exit(0)
 
     print(f"Target Item: {target_item['title']} (Code: {target_item['itemCode']})")

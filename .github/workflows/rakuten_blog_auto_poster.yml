@@ -9,6 +9,7 @@ on:
 jobs:
   post:
     runs-on: ubuntu-latest
+    timeout-minutes: 15 # 止まったままフリーズするのを防ぐタイムアウト設定
     permissions:
       contents: write
 
@@ -49,7 +50,9 @@ jobs:
       - name: Commit and push cache update
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "github-actions[bot]"
+          git pull origin main --rebase || true
           git add posted_cache.txt || true
           git commit -m "chore: Update posted cache [skip ci]" || true
-          git push || true
+          git push origin main || true
+
