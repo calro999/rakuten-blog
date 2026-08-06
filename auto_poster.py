@@ -116,8 +116,13 @@ def fetch_rakuten_items(app_id: str, access_key: str, affiliate_id: str, keyword
 
     url = f"{base_url}?{urllib.parse.urlencode(params)}"
     try:
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, context=ctx, timeout=15) as response:
             data = json.loads(response.read().decode("utf-8"))
             items = []
             for entry in data.get("Items", []):

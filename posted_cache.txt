@@ -607,3 +607,5 @@ ddonline:10002446
 oyaizu:10000957
 f402052-iizuka:10001249
 luna-luce:10006157
+f352012-shimonoseki:10001413
+recolte-kobe:10000058
