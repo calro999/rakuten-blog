@@ -152,12 +152,13 @@ def fetch_rakuten_items(app_id: str, access_key: str, affiliate_id: str, keyword
 
 def get_mock_items(keyword: str) -> list:
     """ドライラン用のモックデータを生成。"""
+    mock_id = f"mock_{random.randint(100000, 999999)}"
     return [
         {
             "title": f"【北欧風】{keyword} ウッド調ナチュラルデザイン",
             "itemCaption": f"毎日の暮らしを豊かにするモダンな『{keyword}』です。温かみのある木目調デザインで、リビングや寝室に置くだけでQOLが向上し、上質な空間を演出してくれます。使いやすさにこだわり、シンプルでありながら飽きのこない美しいフォルムを実現しました。",
             "affiliateUrl": "https://r18.afl.rakuten.co.jp/mock_interior",
-            "itemCode": "mock_interior_001",
+            "itemCode": mock_id,
             "price": "4,980円",
             "imageUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80"
         }

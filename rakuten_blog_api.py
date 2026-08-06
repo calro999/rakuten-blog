@@ -72,7 +72,7 @@ class RakutenBlogAPI:
             with sync_playwright() as p:
                 browser = p.chromium.launch(
                     headless=True,
-                    args=["--disable-blink-features=AutomationControlled"]
+                    args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-gpu"]
                 )
                 
                 # Context options

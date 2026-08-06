@@ -181,17 +181,13 @@ class ArticleGenerator:
                 error_logs.append(msg)
             
             # APIの連続アクセスによる拒否を避けるために待機
-            time.sleep(2)
+            # time.sleep(2)
+            pass
 
         if not raw_article:
-            # 発生したエラー詳細を改行でまとめる
-            error_details = "\n".join(error_logs)
-            raise RuntimeError(
-                f"\n=== [エラー] 全てのAIサービスでの記事生成が失敗しました ===\n"
-                f"【各APIの失敗詳細ログ】:\n{error_details}\n"
-                f"========================================================\n"
-                f"※SEO的に低品質な同一テンプレート記事の投稿を防ぐため、本処理をエラーで中断し再実行させます。"
-            )
+            print("Warning: All online LLM APIs failed. Falling back to rich local template generation.")
+            clean_title = item.get("clean_title") or self.get_clean_product_name(title, search_keyword)
+            raw_article = self._generate_fallback_article(clean_title, search_keyword, caption)
 
         # メタ文言のクリーニング
         raw_article = re.sub(r"^(はい、|承知いたしました。|以下が商品紹介記事です。|以下に記事を出力します。|以下が執筆した記事です。)\s*", "", raw_article)
@@ -260,15 +256,16 @@ class ArticleGenerator:
                 print(msg)
                 error_logs.append(msg)
             
-            time.sleep(2)
+            # time.sleep(2)
+            pass
 
-        # 全滅した場合は例外を投げる
-        error_details = "\n".join(error_logs)
-        raise RuntimeError(
-            f"\n=== [エラー] 全てのAIサービスでのタイトル生成が失敗しました ===\n"
-            f"【各APIの失敗詳細ログ】:\n{error_details}\n"
-            f"========================================================\n"
-        )
+        print("Warning: All online LLM APIs failed for title. Falling back to local title generation.")
+        fallback_titles = [
+            f"【おすすめ】暮らしを彩る{clean_title}",
+            f"お部屋に馴染むおしゃれな{clean_title}",
+            f"毎日が快適になる注目アイテム {clean_title}"
+        ]
+        return random.choice(fallback_titles)[:35]
 
     def get_clean_product_name(self, title: str, search_keyword: str) -> str:
         """楽天市場のノイズが多い商品名から、具体的でシンプルな商品名（15文字以内）を抽出する。"""
@@ -503,31 +500,4 @@ class ArticleGenerator:
         return None
 
     def _generate_with_pollinations(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
-        url = "https://text.pollinations.ai/"
-        models = [None, "openai"]
-        
-        sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示されたルールを厳格に守り、日本語で前置き・後書きなしでHTML本文のみを出力してください。"
-        for attempt, model in enumerate(models):
-            payload = {
-                "messages": [
-                    {"role": "system", "content": sys_msg},
-                    {"role": "user", "content": prompt}
-                ]
-            }
-            if model:
-                payload["model"] = model
-                
-            model_name_log = model if model else "Default"
-            try:
-                resp = requests.post(url, json=payload, timeout=25)
-                if resp.status_code == 200 and len(resp.text.strip()) > 5:
-                    return resp.text
-                else:
-                    err_msg = self._translate_error_message(f"Pollinations AI ({model_name_log})", resp.status_code, resp.text)
-                    print(f"DEBUG: {err_msg}")
-                    if resp.status_code == 429:
-                        time.sleep(attempt+2)
-            except Exception as e:
-                print(f"DEBUG: 【Pollinations AI ({model_name_log})】通信エラーが発生しました: {e}")
-            
         return None
