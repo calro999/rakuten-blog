@@ -586,3 +586,4 @@ koiwaishop:10000391
 recolte-kobe:10000059
 livingut:10025550
 15plaza:10000000
+auc-ecoloco:10008290
