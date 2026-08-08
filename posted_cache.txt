@@ -596,3 +596,4 @@ shopkurano:10008471
 michinokunosato:10027086
 f052019-akita:10004171
 f303623-hirogawa:10002243
+sento-coop:10000784
