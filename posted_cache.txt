@@ -594,3 +594,4 @@ keebright:10000149
 northcolorsshop:10000084
 shopkurano:10008471
 michinokunosato:10027086
+f052019-akita:10004171
