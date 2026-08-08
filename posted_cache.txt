@@ -599,3 +599,4 @@ f303623-hirogawa:10002243
 sento-coop:10000784
 saboten-s:10000251
 garandou:10002273
+f192023-fujiyoshida:10000765
