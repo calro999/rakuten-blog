@@ -357,7 +357,7 @@ class ArticleGenerator:
             print("DEBUG: 【Gemini API】GEMINI_API_KEY が環境変数に設定されていません。")
             return None
         
-        sys_msg = system_prompt or "あなたはライフスタイルブログのプロ編集者です。指示された厳格なルールを遵守し、余計な挨拶や解説を一切含まないHTML本文のみを出力します。"
+        sys_msg = system_prompt or "あなたは『北欧・韓国インテリア＆家具・厳選スイーツ』に精通したプロのライフスタイル編集者です。指示された厳格なルールを遵守し、AI臭さを排除した自然で洗練された日本語のHTML本文のみを出力します。"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
