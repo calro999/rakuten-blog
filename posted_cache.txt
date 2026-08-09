@@ -618,3 +618,4 @@ f262099-nagaokakyo:10001460
 hello-furniture:10045073
 a-price:11032752
 kaiteki-homes:10091625
+auc-claireonline:10000972
