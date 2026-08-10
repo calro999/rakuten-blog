@@ -625,3 +625,4 @@ c-syndicate:10005887
 saibashop01:10162650
 artworkstudio:10002063
 roomy:10015786
+newsakae:10000119
