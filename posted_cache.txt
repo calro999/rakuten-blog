@@ -661,3 +661,4 @@ orangejam:10001227
 f044067-rifu:10000331
 f332020-kurashiki:10000639
 plussmile:10000090
+interior-palette:10137997
