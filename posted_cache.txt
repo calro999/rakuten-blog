@@ -669,3 +669,4 @@ teria:10016513
 thinkrich:10162471
 auc-fine-dream:10000504
 753nagomi:10000345
+telenty:10004499
