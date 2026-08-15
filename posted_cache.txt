@@ -712,3 +712,4 @@ jism:13377670
 iwailoft:10002488
 interform-inc:10003984
 singlelife:10023820
+hokuou-living:10000108
