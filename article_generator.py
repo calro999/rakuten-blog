@@ -19,62 +19,23 @@ class ArticleGenerator:
     def load_model(self):
         print("ArticleGenerator: Initialized using online APIs (Gemini / fallback).")
 
-    def _detect_genre(self, title: str, search_keyword: str) -> str:
-        text = (title + " " + search_keyword).lower()
+    def _detect_genre(self, title: str, search_keyword: str, caption: str = "") -> str:
+        text = (title + " " + search_keyword + " " + caption).lower()
         if "ふるさと納税" in text:
             return "furusato"
-        if any(w in text for w in ["スイーツ", "菓子", "プリン", "ケーキ", "チョコ", "クッキー", "バウムクーヘン", "大福", "どら焼き", "カステラ", "マカロン", "ジェラート", "アイス"]):
+        if any(w in text for w in ["スイーツ", "和菓子", "洋菓子", "菓子", "プリン", "ケーキ", "チョコ", "クッキー", "バウムクーヘン", "大福", "どら焼き", "カステラ", "マカロン", "ジェラート", "アイス", "パイ", "饅頭", "タルト", "ロールケーキ"]):
             return "sweets"
-        if any(w in text for w in ["食器", "プレート", "急須", "コップ", "マグカップ", "グラス", "皿", "箸", "カトラリー", "キャニスター", "ボウル"]):
-            return "tableware"
-        if any(w in text for w in ["ラグ", "カーテン", "クッション", "テーブル", "ライト", "ランプ", "ミラー", "鏡", "時計", "収納", "スツール", "棚", "ソファー", "照明", "傘立て", "ハンガー"]):
+        if any(w in text for w in ["肉", "牛", "豚", "鶏", "米", "フルーツ", "果物", "海鮮", "カニ", "エビ", "魚", "グルメ", "惣菜", "ハンバーグ", "餃子", "うどん", "ラーメン"]):
+            return "food"
+        if any(w in text for w in ["家電", "ライト", "照明", "ランプ", "時計", "加湿器", "コードレス", "扇風機", "ヒーター", "ドライヤー", "スピーカー"]):
+            return "appliance"
+        if any(w in text for w in ["食器", "プレート", "急須", "コップ", "マグカップ", "グラス", "皿", "箸", "カトラリー", "キャニスター", "ボウル", "フライパン", "鍋", "包丁"]):
+            return "kitchen"
+        if any(w in text for w in ["家具", "テーブル", "チェスト", "ラック", "ワゴン", "ソファー", "チェア", "ラグ", "カーテン", "収納", "棚", "スツール", "ミラー", "鏡", "アートパネル", "ポスター", "ハンガー", "傘立て"]):
             return "interior"
         return "general"
 
-    def _generate_fallback_article(self, clean_title: str, search_keyword: str, caption: str) -> str:
-        """
-        LLMが一時的に利用できない場合でも、固定テンプレートやキーワード決め打ち（アートパネルに鍵が出る等の誤爆）を
-        完全に排除し、実際の商品説明（caption）とタイトルから固有の文章・スペックを抽出して自然なレビューを構築する。
-        """
-        # 商品説明（caption）からノイズを除去し、意味のある文を抽出
-        clean_cap = re.sub(r'https?://\S+|【[^】]*】|\[[^\]]*\]', '', caption)
-        sentences = [s.strip() for s in re.split(r'[。！!？?\n\r]+', clean_cap) if len(s.strip()) >= 8]
-        
-        # 商品説明から抽出できた特徴文（最大3つ）
-        useful_sentences = []
-        for s in sentences:
-            if not any(ban in s for ban in ["送料無料", "あす楽", "レビュー", "クーポン", "ポイント", "ショップ", "問い合わせ", "返品", "交換"]):
-                useful_sentences.append(s)
-            if len(useful_sentences) >= 3:
-                break
 
-        # 1. 冒頭の導入（商品名に完全に合わせた自然な語り口・「ます」連続を回避）
-        openers = [
-            f"<p>お部屋の模様替えや日々の暮らしのちょっとした見直しに、手軽に取り入れられると人気を集めている<b>{clean_title}</b>。実際に使ってみると、写真以上に満足度が高くて驚くアイテムの一つ。</p>",
-            f"<p>「ずっと気になっていたけれど、もっと早く買えばよかった…！」と思わせてくれるのが、今回ご紹介する<b>{clean_title}</b>。日々の暮らしにしっくり馴染んでくれます。</p>",
-            f"<p>普段の暮らしの中で、ちょっとした不便を感じたり、空間の雰囲気をガラリと変えたいときにぴったりな<b>{clean_title}</b>。使い勝手とデザインのバランスが絶妙な一品。</p>"
-        ]
-        p1 = random.choice(openers)
-
-        # 2. 商品説明から抽出したリアルな特徴・スペック
-        spec_bullets = []
-        if useful_sentences:
-            for s in useful_sentences:
-                spec_bullets.append(f"・{s}")
-            specs_text = "<br>".join(spec_bullets)
-            p2 = f"<p><b>■ 実際にチェックしておきたい推しポイント</b><br>{specs_text}</p>"
-        else:
-            p2 = f"<p><b>■ 実際に使って感じた魅力</b><br>・無駄のない洗練されたデザインで、どんなお部屋のテイストにも自然にマッチ<br>・日々の扱いやすさやお手入れのしやすさもしっかり考慮された親切設計<br>・届いたその日からすぐに活躍してくれる実用性の高さ</p>"
-
-        # 3. 本音の注意点と生活の変化（体言止めや自然な口調を織り交ぜる）
-        closers = [
-            f"<p>事前に設置スペースやサイズの確認だけはおすすめしますが、日々の使いやすさは抜群。お気に入りのアイテムが一つ加わるだけで、毎日過ごす空間がぐっと愛おしく感じられるようになりますよ。</p>",
-            f"<p>購入前にサイズ感やお部屋のレイアウトをイメージしておくと失敗知らず。いつもの生活動線にすっきり溶け込み、心地よい暮らしのリズムを整えてくれる心強い味方です。</p>",
-            f"<p>使う場所の寸法はあらかじめ測っておくのが安心ですが、実用性の高さと見た目の良さは文句なし。日々の暮らしのクオリティをさりげなく引き上げてくれる優秀なアイテム。</p>"
-        ]
-        p3 = random.choice(closers)
-
-        return f"{p1}\n{p2}\n{p3}"
 
     def generate_dynamic_cta(self, clean_title: str, search_keyword: str, caption: str, affiliate_url: str) -> str:
         """
@@ -110,6 +71,50 @@ class ArticleGenerator:
             f'  </a>\n'
             f'</p>'
         )
+
+    def _call_llm_with_retries(self, prompt: str, system_prompt: Optional[str] = None, min_length: int = 100, task_name: str = "Generation") -> str:
+        """
+        静的フォールバックは絶対に使用しない。
+        失敗しそうな場合は、Gemini、GitHub Models、OpenRouter、HuggingFaceの
+        合計20以上の異なるAIモデルを順次自動切替しながら、成功するまで粘り強く再試行する。
+        """
+        api_flow = [
+            ("Gemini API (gemini-2.0-flash)", lambda p, s: self._generate_with_gemini(p, s, specific_model="gemini-2.0-flash")),
+            ("Gemini API (gemini-1.5-flash)", lambda p, s: self._generate_with_gemini(p, s, specific_model="gemini-1.5-flash")),
+            ("Gemini API (gemini-1.5-flash-8b)", lambda p, s: self._generate_with_gemini(p, s, specific_model="gemini-1.5-flash-8b")),
+            ("Gemini API (gemini-2.0-flash-lite)", lambda p, s: self._generate_with_gemini(p, s, specific_model="gemini-2.0-flash-lite")),
+            ("Gemini API (gemini-1.5-pro)", lambda p, s: self._generate_with_gemini(p, s, specific_model="gemini-1.5-pro")),
+            ("GitHub Models (gpt-4o-mini)", lambda p, s: self._generate_with_github_models(p, s, model_name="gpt-4o-mini")),
+            ("GitHub Models (gpt-4o)", lambda p, s: self._generate_with_github_models(p, s, model_name="gpt-4o")),
+            ("GitHub Models (Phi-3.5-mini)", lambda p, s: self._generate_with_github_models(p, s, model_name="Phi-3.5-mini-instruct")),
+            ("GitHub Models (Mistral-large)", lambda p, s: self._generate_with_github_models(p, s, model_name="Mistral-large-2407")),
+            ("OpenRouter (gemini-2.0-flash-free)", lambda p, s: self._generate_with_openrouter(p, s, model_name="google/gemini-2.0-flash-exp:free")),
+            ("OpenRouter (llama-3.3-70b-free)", lambda p, s: self._generate_with_openrouter(p, s, model_name="meta-llama/llama-3.3-70b-instruct:free")),
+            ("OpenRouter (qwen-2.5-72b-free)", lambda p, s: self._generate_with_openrouter(p, s, model_name="qwen/qwen-2.5-72b-instruct:free")),
+            ("OpenRouter (deepseek-r1-free)", lambda p, s: self._generate_with_openrouter(p, s, model_name="deepseek/deepseek-r1:free")),
+            ("OpenRouter (deepseek-chat-free)", lambda p, s: self._generate_with_openrouter(p, s, model_name="deepseek/deepseek-chat:free")),
+            ("HuggingFace (Qwen-2.5-72B)", self._generate_with_huggingface),
+        ]
+
+        # 最大3ラウンド試行（モデル切替＋待機）
+        for attempt_round in range(1, 4):
+            print(f"--- 【{task_name}】LLM生成ラウンド {attempt_round}/3 開始 ---")
+            for model_label, fn in api_flow:
+                try:
+                    print(f"Trying [{model_label}] for {task_name}...")
+                    res = fn(prompt, system_prompt)
+                    if res and len(res.strip()) >= min_length:
+                        print(f"SUCCESS: Generated {task_name} using [{model_label}] ({len(res.strip())} chars)")
+                        return res.strip()
+                except Exception as e:
+                    print(f"DEBUG: Error with [{model_label}]: {e}")
+            
+            if attempt_round < 3:
+                wait_time = attempt_round * 4
+                print(f"Warning: All models in round {attempt_round} failed or were rate-limited. Waiting {wait_time}s before next round...")
+                time.sleep(wait_time)
+
+        raise RuntimeError(f"FATAL: All online LLM models failed across 3 retry rounds for {task_name}. Static fallback is disabled.")
 
     def generate_review_article(self, item: Dict[str, Any]) -> str:
         title = item.get("title", "")
@@ -148,47 +153,7 @@ class ArticleGenerator:
    ・スマホで流し読みしても重要なスペックやメリットが目に飛び込んでくるよう、要所を <b> タグで太字にしてください。
    ・見出しタグ（<h1>〜<h3>）や <div>, <ul>, <li> は使わず、<p>タグのみの本文HTMLを出力してください。
 """
-
-        # 呼び出しフロー: 各種APIをフォールバックとして順に実行
-        api_flow = [
-            ("Gemini API (Free Tier) - 1回目", self._generate_with_gemini),
-            ("OpenRouter Free API - 1回目", self._generate_with_openrouter),
-            ("GitHub Models API - 1回目", self._generate_with_github_models),
-            ("HuggingFace API - 1回目", self._generate_with_huggingface),
-            ("Pollinations AI (ポリゴンGPT) - 1回目", self._generate_with_pollinations),
-            ("Gemini API (Free Tier) - 2回目", self._generate_with_gemini),
-            ("OpenRouter Free API - 2回目", self._generate_with_openrouter),
-            ("Pollinations AI (ポリゴンGPT) - 2回目", self._generate_with_pollinations),
-        ]
-
-        raw_article = None
-        error_logs = []
-        
-        for name, gen_fn in api_flow:
-            try:
-                print(f"Attempting article generation with {name}...")
-                res = gen_fn(prompt)
-                if res and len(res.strip()) > 150:
-                    raw_article = res.strip()
-                    print(f"Successfully generated article using {name}!")
-                    break
-                else:
-                    msg = f"【{name}】空の応答、または150文字未満の短い文章が返されました。"
-                    print(msg)
-                    error_logs.append(msg)
-            except Exception as e:
-                msg = f"【{name}】呼び出し処理中にエラーが発生しました: {str(e)}"
-                print(msg)
-                error_logs.append(msg)
-            
-            # APIの連続アクセスによる拒否を避けるために待機
-            # time.sleep(2)
-            pass
-
-        if not raw_article:
-            print("Warning: All online LLM APIs failed. Falling back to rich local template generation.")
-            clean_title = item.get("clean_title") or self.get_clean_product_name(title, search_keyword)
-            raw_article = self._generate_fallback_article(clean_title, search_keyword, caption)
+        raw_article = self._call_llm_with_retries(prompt, min_length=150, task_name="Article Content")
 
         # メタ文言のクリーニング
         raw_article = re.sub(r"^(はい、|承知いたしました。|以下が商品紹介記事です。|以下に記事を出力します。|以下が執筆した記事です。)\s*", "", raw_article)
@@ -215,59 +180,22 @@ class ArticleGenerator:
         system_prompt = "あなたは読者の目を引き、クリック率（CTR）と検索流入（SEO）を最大化するブログ記事タイトルを作成するプロのコピーライターです。読者の日常の悩み解決や具体的なベネフィットを伝え、日本語で余計な説明なしにタイトルテキストのみを出力してください。"
 
         prompt = f"""以下の商品情報を元に、読者の悩み解決や生活の変化がひと目でわかり、思わずクリックしたくなる魅力的なブログ記事タイトルを1つだけ生成してください。
+フォールバックや定型テンプレートは一切使わず、この商品固有の魅力・ベネフィットを捉えたオリジナルのタイトルにしてください。
 
 【商品名】: {clean_title}
 【商品説明】: {caption}
 【検索キーワード】: {search_keyword}
 
 【タイトル作成ルール（厳格遵守）】:
-1. 【悩み解決・ベネフィット】: 「朝の鍵探しがゼロに」「賃貸でも壁を傷つけない」「玄関がすっきり片付く」「カフェ風のおしゃれ空間に」など、読者の日常の困りごとを解決する具体的なメリットや変化をタイトルに盛り込んでください。
-2. 【商品名の明記】: 検索流入（SEO）のため、「{clean_title}」または「{search_keyword}」に含まれる主要名詞（例：木製キーフック、珪藻土バスマット等）を必ずタイトルに含めてください。
+1. 【悩み解決・ベネフィット】: 「朝の鍵探しがゼロに」「賃貸でも壁を傷つけない」「絶品おうちカフェ」「老舗の本格的な味わい」など、その商品固有のメリットや変化をタイトルに盛り込んでください。
+2. 【商品名の明記】: 検索流入（SEO）のため、「{clean_title}」または「{search_keyword}」に含まれる主要名詞（例：木製キーフック、和菓子 カステラ 老舗等）を必ずタイトルに含めてください。
 3. 【文字数】: スマホ画面で一目で読めるよう、25〜35文字程度に収めてください。
 4. 【禁止事項】: 「QOL爆上がり」「生活の質」「おすすめ商品」などの陳腐な表現、記号の多用（【】や『』、「」など）は避け、自然で魅力的な日本語にしてください。
 5. 【出力フォーマット】: 余計な前置きや解説は一切含めず、タイトル文字列のみを出力してください。
 """
-        # 呼び出しフロー: 各種APIをフォールバックとして順に実行
-        api_flow = [
-            ("Gemini API (Free Tier) - 1回目", self._generate_with_gemini),
-            ("OpenRouter Free API - 1回目", self._generate_with_openrouter),
-            ("GitHub Models API - 1回目", self._generate_with_github_models),
-            ("HuggingFace API - 1回目", self._generate_with_huggingface),
-            ("Pollinations AI (ポリゴンGPT) - 1回目", self._generate_with_pollinations),
-            ("Gemini API (Free Tier) - 2回目", self._generate_with_gemini),
-            ("OpenRouter Free API - 2回目", self._generate_with_openrouter),
-            ("Pollinations AI (ポリゴンGPT) - 2回目", self._generate_with_pollinations),
-        ]
-
-        error_logs = []
-        for name, gen_fn in api_flow:
-            try:
-                print(f"Attempting title generation with {name}...")
-                res = gen_fn(prompt, system_prompt=system_prompt)
-                if res and len(res.strip()) > 3:
-                    clean_res = re.sub(r'<[^>]+>|[\"\'「」『』【】]', '', res).strip()
-                    if clean_res:
-                        return clean_res[:40]
-                else:
-                    msg = f"【{name}】空または3文字未満の短いタイトルが返されました。"
-                    print(msg)
-                    error_logs.append(msg)
-            except Exception as e:
-                msg = f"【{name}】タイトル生成中にエラーが発生しました: {str(e)}"
-                print(msg)
-                error_logs.append(msg)
-            
-            # time.sleep(2)
-            pass
-
-        print("Warning: All online LLM APIs failed for title. Falling back to local title generation.")
-        fallback_titles = [
-            f"朝のバタバタ解消！賃貸でも使える {clean_title}",
-            f"散らかる悩みをスッキリ解決！注目の {clean_title}",
-            f"置くだけでお部屋が垢抜ける！実力派 {clean_title}",
-            f"毎日のプチストレスがゼロに！大満足の {clean_title}"
-        ]
-        return random.choice(fallback_titles)[:35]
+        raw_title = self._call_llm_with_retries(prompt, system_prompt=system_prompt, min_length=5, task_name="Blog Title")
+        clean_res = re.sub(r'<[^>]+>|[\"\'「」『』【】\n\r]', '', raw_title).strip()
+        return clean_res[:40]
 
     def get_clean_product_name(self, title: str, search_keyword: str) -> str:
         """楽天市場のノイズが多い商品名から、具体的でシンプルな商品名（15文字以内）を抽出する。"""
@@ -278,65 +206,11 @@ class ArticleGenerator:
 【楽天市場の商品名】: {title}
 【検索時のキーワード】: {search_keyword}
 """
-        generators = [
-            ("Gemini API (Free Tier)", self._generate_with_gemini),
-            ("GitHub Models API (Free for Actions/PAT)", self._generate_with_github_models),
-            ("OpenRouter Free API", self._generate_with_openrouter),
-        ]
-
-        for name, gen_fn in generators:
-            try:
-                res = gen_fn(prompt, system_prompt=system_prompt)
-                if res and len(res.strip()) > 1:
-                    cleaned = re.sub(r'<[^>]+>|[\"\'「」『』【】]', '', res).strip()
-                    if cleaned and len(cleaned) <= 18:
-                        return cleaned
-            except Exception:
-                continue
-
-        # --- フォールバック (LLMが全滅した場合のルールベース抽出) ---
-        # 1. 検索キーワードから「ふるさと納税」や「ストレート」等のノイズを除去して優先的に商品名として採用する
-        clean_keyword = search_keyword or ""
-        for term in ["ふるさと納税", "ふるさと", "ストレート", "通販", "人気", "おすすめ", "ギフト", "訳あり", "ランキング", "おしゃれ", "北欧", "分別", "スリム"]:
-            clean_keyword = clean_keyword.replace(term, "")
-        clean_keyword = re.sub(r'\s+', ' ', clean_keyword).strip()
-
-        if clean_keyword and len(clean_keyword) >= 2:
-            return clean_keyword[:15]
-
-        # 2. キーワードが使えない場合のみ、タイトルから抽出を試みる
-        clean_title = title
-        clean_title = re.sub(r'【[^】]+】|\[[^\]]+\]|（[^）]+）|\([^\)]+\)', '', clean_title)
-        
-        noise_words = [
-            "送料無料", "ポイント", "マラソン", "セール", "あす楽", "即納", "公式", "限定", 
-            "国産", "日本製", "新生活", "おしゃれ", "かわいい", "シンプル", "北欧", "モダン", 
-            "おすすめ", "人気", "大容量", "便利", "軽量", "防臭", "抗菌", "消臭", "プチプラ",
-            "スーパーSALE", "お買い物マラソン", "割引", "クーポン", "対象", "％OFF",
-            "ふるさと納税", "ふるさと", "カートン", "カトン", "ガイアの夜明け", "で紹介", "すぐ届く"
-        ]
-        for noise in noise_words:
-            clean_title = clean_title.replace(noise, "")
-            
-        clean_title = re.sub(r'[^a-zA-Z0-9あ-んア-ン一-龠\s\-]', '', clean_title)
-        clean_title = re.sub(r'\s+', ' ', clean_title).strip()
-        
-        words = [w for w in clean_title.split(' ') if w]
-        selected_words = []
-        char_count = 0
-        for w in words:
-            if re.match(r'^[a-zA-Z0-9_\-\.\/]+$', w) and len(w) <= 3:
-                continue
-            if len(selected_words) >= 2 or char_count + len(w) > 15:
-                break
-            selected_words.append(w)
-            char_count += len(w) + 1
-            
-        product_name = " ".join(selected_words).strip()
-        if not product_name or len(product_name) < 2:
-            product_name = clean_keyword or "おすすめアイテム"
-            
-        return product_name[:15]
+        raw_name = self._call_llm_with_retries(prompt, system_prompt=system_prompt, min_length=2, task_name="Clean Product Name")
+        cleaned = re.sub(r'<[^>]+>|[\"\'「」『』【】\n\r]', '', raw_name).strip()
+        if cleaned and len(cleaned) <= 20:
+            return cleaned[:18]
+        return search_keyword[:15] if search_keyword else title[:15]
 
     def _translate_error_message(self, name: str, status_code: int, response_text: str) -> str:
         """APIのエラーレスポンスを分かりやすい日本語に翻訳・解説する"""
@@ -353,48 +227,49 @@ class ArticleGenerator:
         else:
             return f"【{name}】通信エラー({status_code}): レスポンス内容: {response_text}"
 
-    def _generate_with_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
+    def _generate_with_gemini(self, prompt: str, system_prompt: Optional[str] = None, specific_model: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            print("DEBUG: 【Gemini API】GEMINI_API_KEY が環境変数に設定されていません。")
             return None
         
         sys_msg = system_prompt or "あなたは読者の日常の悩みに寄り添い、商品のリアルな使い心地・具体的なメリット・注意点を本音で伝える凄腕の暮らしブロガーです。AI特有の抽象的な美辞麗句（「彫刻のような〜」「暮らしを豊かに」等）や説明書のような機械的表現は完全に排除し、自然で説得力のある日本語のHTML本文のみを出力します。"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "contents": [{
-                "parts": [{
-                    "text": sys_msg + "\n\n" + prompt
-                }]
-            }],
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 2000
+        gemini_models = [specific_model] if specific_model else ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"]
+        
+        for model in gemini_models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            headers = {"Content-Type": "application/json"}
+            payload = {
+                "contents": [{
+                    "parts": [{
+                        "text": sys_msg + "\n\n" + prompt
+                    }]
+                }],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": 2048
+                }
             }
-        }
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=30)
-            if resp.status_code == 200:
-                data = resp.json()
-                try:
-                    return data["candidates"][0]["content"]["parts"][0]["text"]
-                except KeyError:
-                    print("DEBUG: 【Gemini API】ステータスは200ですが、想定外のレスポンス形式が返されました。")
-                    return None
-            else:
-                err_msg = self._translate_error_message("Gemini API", resp.status_code, resp.text)
-                print(f"DEBUG: {err_msg}")
-        except Exception as e:
-            print(f"DEBUG: 【Gemini API】呼び出し中に通信エラーが発生しました: {e}")
+            try:
+                resp = requests.post(url, headers=headers, json=payload, timeout=25)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    try:
+                        text = data["candidates"][0]["content"]["parts"][0]["text"]
+                        if text and len(text.strip()) > 5:
+                            return text
+                    except KeyError:
+                        pass
+                else:
+                    err_msg = self._translate_error_message(f"Gemini API ({model})", resp.status_code, resp.text)
+                    print(f"DEBUG: {err_msg}")
+            except Exception as e:
+                print(f"DEBUG: 【Gemini API ({model})】通信エラー: {e}")
         return None
 
-    def _generate_with_github_models(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
+    def _generate_with_github_models(self, prompt: str, system_prompt: Optional[str] = None, model_name: str = "gpt-4o-mini") -> Optional[str]:
         token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
         if not token:
-            print("DEBUG: GITHUB_TOKEN or GH_TOKEN is not set in environment variables.")
             return None
-        print(f"DEBUG: GITHUB_TOKEN/GH_TOKEN is set (length: {len(token)}).")
         
         sys_msg = system_prompt or "あなたは読者の日常の悩みに寄り添い、商品のリアルな使い心地・具体的なメリット・注意点を本音で伝える凄腕の暮らしブロガーです。AI特有の抽象的な美辞麗句や説明書のような機械的表現は完全に排除し、自然で説得力のある日本語のHTML本文のみを出力します。"
         url = "https://models.inference.ai.azure.com/chat/completions"
@@ -403,7 +278,7 @@ class ArticleGenerator:
             "Content-Type": "application/json"
         }
         payload = {
-            "model": "gpt-4o-mini",
+            "model": model_name,
             "messages": [
                 {"role": "system", "content": sys_msg},
                 {"role": "user", "content": prompt}
@@ -416,18 +291,17 @@ class ArticleGenerator:
                 try:
                     return resp.json()["choices"][0]["message"]["content"]
                 except (KeyError, IndexError):
-                    print("DEBUG: GitHub Models API returned status 200 but response format was unexpected.")
                     return None
             else:
-                print(f"DEBUG: GitHub Models API HTTP error. status_code={resp.status_code}, response={resp.text}")
+                err_msg = self._translate_error_message(f"GitHub Models ({model_name})", resp.status_code, resp.text)
+                print(f"DEBUG: {err_msg}")
         except Exception as e:
-            print(f"DEBUG: Exception during GitHub Models API call: {e}")
+            print(f"DEBUG: GitHub Models ({model_name}) 通信エラー: {e}")
         return None
 
-    def _generate_with_openrouter(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
+    def _generate_with_openrouter(self, prompt: str, system_prompt: Optional[str] = None, model_name: Optional[str] = None) -> Optional[str]:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
-            print("DEBUG: 【OpenRouter API】OPENROUTER_API_KEY が環境変数に設定されていません。")
             return None
         
         sys_msg = system_prompt or "あなたは読者の日常の悩みに寄り添い、商品のリアルな使い心地・具体的なメリット・注意点を本音で伝える凄腕の暮らしブロガーです。AI特有の抽象的な美辞麗句や説明書のような機械的表現は完全に排除し、自然で説得力のある日本語のHTML本文のみを出力します。"
@@ -436,10 +310,10 @@ class ArticleGenerator:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
-        models = [
+        models = [model_name] if model_name else [
+            "google/gemini-2.0-flash-exp:free",
             "meta-llama/llama-3.3-70b-instruct:free",
-            "qwen/qwen-2.5-72b-instruct:free",
-            "openrouter/free"
+            "qwen/qwen-2.5-72b-instruct:free"
         ]
         
         for model in models:
@@ -452,7 +326,6 @@ class ArticleGenerator:
                 "temperature": 0.7
             }
             try:
-                print(f"DEBUG: 【OpenRouter API】Using model: {model}")
                 resp = requests.post(url, headers=headers, json=payload, timeout=30)
                 if resp.status_code == 200:
                     data = resp.json()
@@ -461,12 +334,12 @@ class ArticleGenerator:
                         if content and len(content.strip()) > 5:
                             return content
                     except KeyError:
-                        print(f"DEBUG: 【OpenRouter API】Model {model} returned status 200 but response format was unexpected.")
+                        pass
                 else:
-                    err_msg = self._translate_error_message(f"OpenRouter API ({model})", resp.status_code, resp.text)
+                    err_msg = self._translate_error_message(f"OpenRouter ({model})", resp.status_code, resp.text)
                     print(f"DEBUG: {err_msg}")
             except Exception as e:
-                print(f"DEBUG: 【OpenRouter API ({model})】呼び出し中に通信エラーが発生しました: {e}")
+                print(f"DEBUG: OpenRouter ({model}) 通信エラー: {e}")
         return None
 
 
