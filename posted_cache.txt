@@ -688,3 +688,4 @@ suzuyamanomori:10000620
 esupply:10100690
 dotsnext:10000665
 e-collection:10005298
+glv:10048921
