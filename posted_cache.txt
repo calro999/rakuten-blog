@@ -708,3 +708,4 @@ kiyokyou:10000672
 smartkitchen:10003165
 righthandshop:10000204
 dplace:10009837
+jism:13377670
