@@ -34,7 +34,7 @@ NORDIC_KOREAN_INTERIOR_KEYWORDS = [
     "ローテーブル 折りたたみ 北欧", "ハンガーラック スリム 木製", "壁掛け時計 静音 北欧",
     "LEDデスクライト 木目調", "アロマストーン 皿付き", "フェルト 収納バスケット",
     "珪藻土 コースター", "ウッドプレート 食器 北欧", "ガラス キャニスター",
-    "セラミック コーヒーミル", "北欧風 ランチョンマット", "ウォールシェルフ 賃貸 北欧",
+    "セラミック コーヒーミル", "ウォールシェルフ 賃貸 北欧",
     "スツール 木製 北欧", "座椅子 コンパクト 北欧", "ケーブルボックス 木目",
     "スマートゴミ箱 分別", "間接照明 スタンド 北欧", "時計 デジタル 木目",
     "キーフック 玄関 木製", "ポスターフレーム 木製 B2",
@@ -306,6 +306,16 @@ def post_to_rakuten_room(item_code: str, comment: str, session_b64: str) -> bool
             os.remove(session_file_path)
     return success
 
+FORBIDDEN_TERMS = [
+    "ランチョンマット", "クッションカバー", "サボテン", "多肉植物",
+    "トイレットペーパー", "ティッシュペーパー", "みかん", "ミカン", "蜜柑"
+]
+
+def is_forbidden_item(title: str, caption: str = "") -> bool:
+    """指定されたNG商品（ランチョンマット、クッションカバー、サボテン、トイレットペーパー、みかん等）を除外する。"""
+    text = (title + " " + caption).lower()
+    return any(term.lower() in text for term in FORBIDDEN_TERMS)
+
 def main():
     print("=== Starting Rakuten Interior/Goods Blog & Room Poster ===")
     
@@ -340,26 +350,45 @@ def main():
     posted_cache = load_cache()
     print(f"Loaded {len(posted_cache)} posted items from cache.")
 
-    # 3. 楽天市場から商品を検索し、未投稿の商品を探す（最大10回リトライ）
+    # 3. 楽天市場から商品を検索し、未投稿かつNGでない商品を確実に探す（最大100回リトライで絶対止めない）
     target_item = None
-    for attempt in range(10):
+    max_attempts = 100
+    for attempt in range(max_attempts):
         if attempt > 0:
             time.sleep(1)
             keyword = generate_keyword()
-        print(f"Attempt {attempt + 1}: Searching with keyword '{keyword}'...")
+        print(f"Attempt {attempt + 1}/{max_attempts}: Searching with keyword '{keyword}'...")
         items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, keyword)
         if items:
             for item in items:
-                if item["itemCode"] not in posted_cache:
+                code = item["itemCode"]
+                title = item.get("title", "")
+                caption = item.get("itemCaption", "")
+                
+                # 重複チェック & NG商品チェック
+                if code not in posted_cache and not is_forbidden_item(title, caption):
                     target_item = item
                     break
         if target_item:
             break
-        print(f"No new unposted items found for '{keyword}'. Retrying with another keyword...")
+        print(f"No suitable unposted items found for '{keyword}'. Retrying with another keyword...")
 
     if not target_item:
-        print("Warning: Could not find any unposted items after multiple attempts.")
-        sys.exit(0)
+        # 万が一見つからなかった場合の緊急フォールバック（ドライラン用モックではなく人気キーワード再試行）
+        print("Warning: Standard search limit reached. Executing emergency fall-through keyword search...")
+        fallback_kws = ["北欧 チェスト", "韓国インテリア サイドテーブル", "ふるさと納税 バスクチーズケーキ"]
+        for fb_kw in fallback_kws:
+            items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, fb_kw)
+            for item in items:
+                if item["itemCode"] not in posted_cache and not is_forbidden_item(item.get("title", "")):
+                    target_item = item
+                    break
+            if target_item:
+                break
+
+    if not target_item:
+        print("Error: Could not retrieve target item from API.")
+        sys.exit(1)
 
     print(f"Target Item: {target_item['title']} (Code: {target_item['itemCode']})")
 
