@@ -714,3 +714,4 @@ interform-inc:10003984
 singlelife:10023820
 hokuou-living:10000108
 hzshop:10000510
+f032034-ofunato:10000614
