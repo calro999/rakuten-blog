@@ -432,7 +432,12 @@ def main():
 
     img_html = f'<img src="{product_image_url}" alt="{clean_title}" style="max-width: 100%; height: auto; border-radius: 8px;">'
     
-    cta_html = f'<p style="margin: 20px 0;"><a href="{affiliate_url}" target="_blank" rel="noopener noreferrer"><b>＼ 楽天市場で詳細をチェックする ／</b></a></p>'
+    cta_html = article_gen.generate_dynamic_cta(
+        clean_title=clean_title,
+        search_keyword=keyword,
+        caption=target_item.get("itemCaption", ""),
+        affiliate_url=affiliate_url
+    )
     
     ad_tag = '<pointad pointad-id="div-plaza-point-ad" pointad-text="#ブロ活広告#" /><br /><br />'
     article_content = f"{img_html}\n{llm_section}\n{cta_html}\n{ad_tag}"
