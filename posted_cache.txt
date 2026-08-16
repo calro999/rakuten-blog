@@ -719,3 +719,4 @@ ent-o:10016668
 emuemushop:10020551
 dplace:10009839
 msinterior:10000015
+gekiyasukaguya:10026739
