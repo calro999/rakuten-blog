@@ -716,3 +716,4 @@ hokuou-living:10000108
 hzshop:10000510
 f032034-ofunato:10000614
 ent-o:10016668
+emuemushop:10020551
