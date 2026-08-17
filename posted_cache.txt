@@ -732,3 +732,4 @@ f141003-yokohama:10001149
 veroman:10002568
 kodo-store:10002755
 lifestyle-funfun:10032915
+tansu:10044485
