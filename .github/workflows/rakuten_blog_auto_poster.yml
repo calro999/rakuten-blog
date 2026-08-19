@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Playwright Browsers
         run: |
-          playwright install chromium --with-deps
+          playwright install chromium
 
       - name: Run Auto Poster
         env:
