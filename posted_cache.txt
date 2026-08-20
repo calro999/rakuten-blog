@@ -805,3 +805,4 @@ f272094-moriguchi:10000469
 f262048-uji:10001730
 smartkitchen:10002722
 ajisai-apt:10004689
+dapper-s-room1:10000833
