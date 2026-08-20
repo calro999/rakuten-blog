@@ -799,3 +799,4 @@ f221007-shizuoka:10000368
 ksdenki:10513690
 cullent:10013370
 babi-furniture:10001513
+mat-rug:10000784
