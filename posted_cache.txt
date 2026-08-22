@@ -851,3 +851,4 @@ f284424-ichikawa:10000262
 ookawakagu:10003449
 f292036-yamatokoriyama:10000610
 f016632-hamanaka:10000469
+kyoto-meglas:10000982
