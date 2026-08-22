@@ -838,3 +838,4 @@ petcuery:10000039
 f212067-nakatsugawa:10000111
 importgoods-ie:10001475
 nattyandco:10001630
+taka0810:10002548
