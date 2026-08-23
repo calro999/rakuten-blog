@@ -859,3 +859,4 @@ gadgetmart:10034153
 f382027-imabari:10001085
 kaguemon:10040509
 air-rhizome:10012664
+ichikashop:10005304
