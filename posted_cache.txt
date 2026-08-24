@@ -885,3 +885,4 @@ enetanmin:10080117
 q-uoli:10074270
 good-lifeplus:10000883
 emoor:10023507
+ichikashop:10005047
