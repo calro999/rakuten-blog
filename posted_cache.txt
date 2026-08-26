@@ -913,3 +913,4 @@ f142042-kamakura:10000712
 ransballoon:10000037
 hello-furniture:10044347
 arne-style:10094297
+kato-shoten-japan:10002250
