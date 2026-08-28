@@ -953,3 +953,4 @@ panas:10022043
 actonline-rk:10000013
 kajou:10006195
 takayama-shop:10000201
+f231002-nagoya:10001849
