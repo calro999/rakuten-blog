@@ -949,3 +949,4 @@ manabe-interior-hearts:10014427
 la8010:10022332
 apj-online:10003011
 idealstore:10003054
+panas:10022043
