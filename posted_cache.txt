@@ -992,3 +992,4 @@ interior-palette:10167340
 kakko:10006478
 colorfulbox:10146426
 f232386-nagakute:10000007
+roomy:10010592
