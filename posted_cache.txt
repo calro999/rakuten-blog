@@ -986,3 +986,4 @@ f222143-fujieda:10000856
 simomura-kihan:10001331
 wltech:10000122
 ichikashop:10005006
+aromage-store2:10008560
