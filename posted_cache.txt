@@ -984,3 +984,4 @@ miyoshi-ya:10051057
 f232271-takahama:10000353
 f222143-fujieda:10000856
 simomura-kihan:10001331
+wltech:10000122
