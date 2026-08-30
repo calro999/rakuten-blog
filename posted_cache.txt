@@ -1002,3 +1002,4 @@ ichikashop:10005017
 crearnagoya:10011420
 nihoninterior:10036231
 f252018-otsu:10001334
+forinessshop:10008565
