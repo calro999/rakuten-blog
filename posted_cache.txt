@@ -1027,3 +1027,4 @@ takayama-shop:10000518
 gourmetcoffee:10002140
 golwis:10002149
 f392111-konan:10000365
+sheishei:10011254
