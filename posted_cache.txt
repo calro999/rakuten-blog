@@ -1026,3 +1026,4 @@ f032093-ichinoseki:10000782
 takayama-shop:10000518
 gourmetcoffee:10002140
 golwis:10002149
+f392111-konan:10000365
