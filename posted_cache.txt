@@ -1023,3 +1023,4 @@ vin-naturel2020:10000191
 waplus-shop:10000616
 f261009-kyoto:10005162
 f032093-ichinoseki:10000782
+takayama-shop:10000518
