@@ -1047,3 +1047,4 @@ cocopla:10000871
 mai-do:10039704
 hello-furniture:10026552
 kakko:10004427
+kiyokyou:10000980
