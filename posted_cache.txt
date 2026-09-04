@@ -1116,3 +1116,4 @@ f082252-hitachiomiya:10000211
 f114421-miyashiromachi:10000010
 roomy:10010591
 takushistore:10025915
+gekiyasukaguya:10025302
