@@ -1135,3 +1135,4 @@ pease:10004753
 kaguzaku:10006234
 houseidou:10000031
 veroman:10002569
+asia-kobo:10022166
