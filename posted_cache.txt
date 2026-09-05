@@ -1132,3 +1132,4 @@ maruri-tamaki:10003320
 aandi:10002395
 cdare:10001071
 pease:10004753
+kaguzaku:10006234
