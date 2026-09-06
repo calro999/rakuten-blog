@@ -1160,3 +1160,4 @@ iradowl:10001477
 kaguitem:10006136
 f403822-mizumaki:10000126
 blstyle:10009883
+poster-frame:10002849
