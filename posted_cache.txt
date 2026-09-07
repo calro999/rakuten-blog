@@ -1180,3 +1180,4 @@ lifestyle-funfun:10002415
 tel-j:10044349
 sessuimura:10003116
 hanahana-ribbon:10526501
+f012076-obihiro:10000117
