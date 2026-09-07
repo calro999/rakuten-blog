@@ -1176,3 +1176,4 @@ asia-kobo:10023868
 f454214-kadogawa:10000050
 golwis:10001535
 monorogu:10067031
+lifestyle-funfun:10002415
