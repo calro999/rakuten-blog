@@ -1177,3 +1177,4 @@ f454214-kadogawa:10000050
 golwis:10001535
 monorogu:10067031
 lifestyle-funfun:10002415
+tel-j:10044349
