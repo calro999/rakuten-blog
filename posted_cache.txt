@@ -1168,3 +1168,4 @@ pease:10004828
 kakko:10008160
 yamamoku-gifu:10000953
 f422088-matsuura:10000368
+asia-kobo:10023720
