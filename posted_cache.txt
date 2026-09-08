@@ -1207,3 +1207,4 @@ linsl:10000873
 yamasoro:10005315
 nihoninterior:10035094
 takayama-shop:10001803
+lachic12:10179050
