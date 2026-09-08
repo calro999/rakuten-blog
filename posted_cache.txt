@@ -1200,3 +1200,4 @@ plywoodzakka:10048506
 f052132-kitaakita:10007517
 danimo:10000784
 naito-frame:10062948
+hasukii:10004240
