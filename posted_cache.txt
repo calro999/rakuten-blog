@@ -1214,3 +1214,4 @@ monoandtech:10000045
 e-rack:10006682
 touki-furusato:10021374
 bellemaison-interior:10164741
+gaku-yasui:10000008
