@@ -1243,3 +1243,4 @@ f152111-mitsuke:10000649
 kaguno1:10030803
 kohnan-eshop:10163229
 f192023-fujiyoshida:10000347
+takayama-shop:10000520
