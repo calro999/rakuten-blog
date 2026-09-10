@@ -1245,3 +1245,4 @@ kohnan-eshop:10163229
 f192023-fujiyoshida:10000347
 takayama-shop:10000520
 nissin-lux:10001006
+f261009-kyoto:10006159
