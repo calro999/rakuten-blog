@@ -1252,3 +1252,4 @@ auc-kaei-trading:10000270
 biccamera:11820634
 forinessshop:10008567
 f292010-nara:10000262
+veroman:10002314
