@@ -1259,3 +1259,4 @@ importgoods-ie:10001418
 gakubuti:10000812
 kagunosato:10017975
 momoda:11012730
+panas:10022392
