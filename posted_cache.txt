@@ -1257,3 +1257,4 @@ veroman:10002309
 songmicsjapan:10000182
 importgoods-ie:10001418
 gakubuti:10000812
+kagunosato:10017975
