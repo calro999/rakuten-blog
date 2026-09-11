@@ -1266,3 +1266,4 @@ f465011-nakatane:10000060
 f142018-yokosuka:10000934
 craftpark-k5-shop:10000846
 miyoshi-ya:10152479
+mssk-online:10064714
