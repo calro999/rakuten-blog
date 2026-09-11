@@ -1268,3 +1268,4 @@ craftpark-k5-shop:10000846
 miyoshi-ya:10152479
 mssk-online:10064714
 importshopaqua:10009960
+pasarraya:10000146
