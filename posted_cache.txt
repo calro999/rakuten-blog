@@ -1302,3 +1302,4 @@ ampoule:10007468
 colorfulbox:10127331
 takearest-thenorthland:10000299
 f192015-kofu:10003782
+f401005-kitakyushu:10000829
