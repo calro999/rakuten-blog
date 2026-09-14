@@ -1331,3 +1331,4 @@ air-rhizome:10010527
 auc-sbase2008:10001993
 bhp-online:10000393
 chende:10000362
+takayama-shop:10000523
