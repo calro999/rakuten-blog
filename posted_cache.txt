@@ -1360,3 +1360,4 @@ one-style:10000957
 kaguitem:10010803
 dotsnext:10000059
 kotte:10000179
+bubububu:10001015
