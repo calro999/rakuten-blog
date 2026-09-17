@@ -1390,3 +1390,4 @@ rugoo:10001605
 setouchi-selection:10000183
 f060003-yamagata:10006726
 grazia-doris:10006161
+kakko:10008553
