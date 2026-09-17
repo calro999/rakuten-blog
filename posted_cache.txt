@@ -1395,3 +1395,4 @@ f272205-minoh:10000142
 lifeactive:10001189
 panelmarushe:10000208
 faburikkuandokyuto:10004790
+wood-l:10000234
