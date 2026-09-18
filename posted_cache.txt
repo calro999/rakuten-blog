@@ -1437,3 +1437,4 @@ storage-g:10036472
 f122238-kamogawa:10000734
 kanaken:10012597
 ametoo:10004859
+shimoyama-onlineshop:10002969
