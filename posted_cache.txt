@@ -1447,3 +1447,4 @@ attara-store:10001804
 colorfulbox:10127330
 cocolucia:10001432
 f292010-nara:10000003
+f212067-nakatsugawa:10000802
