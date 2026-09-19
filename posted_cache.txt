@@ -1454,3 +1454,4 @@ gigiselect:10002674
 fascimo:10028998
 f202037-ueda:10001742
 f013030-tobetsu:10000130
+setouchi-selection:10000184
