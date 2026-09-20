@@ -1457,3 +1457,4 @@ f013030-tobetsu:10000130
 setouchi-selection:10000184
 oneprice005:10003399
 jyoudai1967:10000066
+storage-g:10035735
