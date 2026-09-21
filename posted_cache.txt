@@ -1480,3 +1480,4 @@ ashop:10003179
 chokado:10011891
 fascimo:10028955
 kaiteki-homes:10099318
+takiemon:10000530
