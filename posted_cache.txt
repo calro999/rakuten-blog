@@ -1468,3 +1468,4 @@ tokyotmkshop:10031022
 abanshop:10006800
 smile2shop:10024785
 patri:10004789
+teria:10018646
