@@ -1500,3 +1500,4 @@ f422126-saikai:10000594
 net-c5:10020371
 livingut:10220341
 auc-kaei-trading:10000269
+ikikagu:10128080
