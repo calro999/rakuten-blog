@@ -1481,3 +1481,4 @@ chokado:10011891
 fascimo:10028955
 kaiteki-homes:10099318
 takiemon:10000530
+f062014-yamagata:10004891
