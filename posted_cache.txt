@@ -1486,3 +1486,4 @@ f092061-nikko:10000259
 aandi:10002396
 luminousjapan:10000200
 four-piece:10000136
+telenty:10004498
