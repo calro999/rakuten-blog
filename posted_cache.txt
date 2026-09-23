@@ -1512,3 +1512,4 @@ kakko:10004426
 wawazakka-shop:10000345
 arne:10029765
 tansu:10054854
+kaiteki-homes:10074713
