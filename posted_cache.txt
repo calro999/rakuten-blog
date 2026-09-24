@@ -1538,3 +1538,4 @@ f093424-mashiko:10000002
 ichikashop:10004897
 f453617-takaharu:10000441
 myhome:10001482
+interior-palette:10155251
