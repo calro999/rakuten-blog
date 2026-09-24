@@ -1528,3 +1528,4 @@ gdphoenix:10000259
 plantashop:10011852
 f141305-kawasaki:10000130
 unit-f:10002759
+kanaken:10007566
