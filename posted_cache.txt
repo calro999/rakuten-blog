@@ -1539,3 +1539,4 @@ ichikashop:10004897
 f453617-takaharu:10000441
 myhome:10001482
 interior-palette:10155251
+hakusan:10010562
