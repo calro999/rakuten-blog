@@ -1561,3 +1561,4 @@ hajimaru:10002440
 wnfashion:10000146
 rcmdin:11455874
 f214213-kitagata:10000016
+asia-kobo:10006192
