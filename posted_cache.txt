@@ -1551,3 +1551,4 @@ kurashidezainshouten:10008118
 f131130-shibuya:10000382
 roomy:10000708
 apricot-r:10001466
+ichikashop:10004910
