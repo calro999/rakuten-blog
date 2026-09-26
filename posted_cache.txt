@@ -1572,3 +1572,4 @@ f342041-mihara:10000565
 auc-kaei-trading:10000271
 aooka:10000412
 marusiyou:10001365
+shiorigaru:10012064
