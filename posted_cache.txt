@@ -1576,3 +1576,4 @@ shiorigaru:10012064
 coffeein:10000336
 mado:10068756
 takayama-shop:10000200
+roots-a:10005251
