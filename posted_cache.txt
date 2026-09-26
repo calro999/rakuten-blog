@@ -1594,3 +1594,4 @@ f112330-kitamoto:10000288
 hajimaru:10001231
 f406104-fukuchi:10001477
 dailygoodsstore:10014608
+tabericstora:10010322
