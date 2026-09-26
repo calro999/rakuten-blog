@@ -1597,3 +1597,4 @@ dailygoodsstore:10014608
 tabericstora:10010322
 f092061-nikko:10000260
 f372081-mitoyo:10002543
+r-mart-plus:10021014
