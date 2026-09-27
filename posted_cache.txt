@@ -1611,3 +1611,4 @@ uno-billion:10000017
 annon:10024619
 zakka-elements:10000149
 f012114-abashiri:10000648
+takayama-shop:10002289
