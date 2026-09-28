@@ -1637,3 +1637,4 @@ rcmd:36337545
 purerefre:10000001
 tyronellstore:10029384
 hmwr:10002703
+takayama-shop:10000204
