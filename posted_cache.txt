@@ -1623,3 +1623,4 @@ dinos:11080285
 f212067-nakatsugawa:10000123
 asia-kobo:10014249
 blossomyogurt:10001386
+f012114-abashiri:10000652
