@@ -1631,3 +1631,4 @@ risopale:10000066
 veromanhome:10000256
 f282090-toyooka:10000431
 colorfulbox:10104862
+arne-style:10092222
