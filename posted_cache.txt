@@ -1661,3 +1661,4 @@ kazu-workshop:10000008
 kaguin:10080779
 setouchi-selection:10000189
 miyoshi-ya:10153444
+f231002-nagoya:10003765
