@@ -1672,3 +1672,4 @@ tribow123:10000016
 blstyle:10009180
 mazazulamp:10000003
 sre3:10008865
+vastsky-store:10000832
