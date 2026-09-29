@@ -1662,3 +1662,4 @@ kaguin:10080779
 setouchi-selection:10000189
 miyoshi-ya:10153444
 f231002-nagoya:10003765
+arne-style:10092223
