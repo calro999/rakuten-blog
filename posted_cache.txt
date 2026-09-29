@@ -1679,3 +1679,4 @@ f252042-omihachiman:10001735
 alamode:10007197
 setouchi-selection:10000185
 takayama-shop:10002288
+f082201-tsukuba:10001161
