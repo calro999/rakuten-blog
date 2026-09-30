@@ -1681,3 +1681,4 @@ setouchi-selection:10000185
 takayama-shop:10002288
 f082201-tsukuba:10001161
 f131121-setagaya:10000051
+f012114-abashiri:10000758
