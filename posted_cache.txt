@@ -1705,3 +1705,4 @@ woooods:10055800
 co-brouni:10000067
 cocolucia:10000943
 mitsuyoshi:10047254
+interior-palette:10189278
