@@ -1779,3 +1779,4 @@ lucky13:10029004
 yamada-denki:10602891
 love-berry:10008688
 mercato-shop:10002324
+kkdirect:10053167
