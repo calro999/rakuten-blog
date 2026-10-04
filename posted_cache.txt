@@ -1763,3 +1763,4 @@ takayama-shop:10001882
 mitsuyoshi:10047255
 tuyakami:10068519
 hidekobashouten:10012203
+e-rack:10009051
