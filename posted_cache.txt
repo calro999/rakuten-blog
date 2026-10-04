@@ -1753,3 +1753,4 @@ f072036-koriyama:10000294
 f402303-itoshima:10001779
 premoa:10970503
 takearest-thenorthland:10000057
+yamasoro:10005739
