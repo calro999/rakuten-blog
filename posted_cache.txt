@@ -1781,3 +1781,4 @@ love-berry:10008688
 mercato-shop:10002324
 kkdirect:10053167
 importgoods-ie:10001680
+f011002-sapporo:10000859
