@@ -1799,3 +1799,4 @@ vastsky-store:10000754
 sheishei:10022126
 irisplaza-r:10100337
 go-shi:10004662
+f142077-chigasaki:10000915
