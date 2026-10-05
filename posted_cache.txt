@@ -1790,3 +1790,4 @@ kagulabo:10004974
 toyonichi-1:10053933
 sweet-sanjo:10000040
 f142123-atsugi:10000555
+f012041-asahikawashi:10000126
