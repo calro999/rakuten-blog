@@ -1795,3 +1795,4 @@ f342076-fukuyama:10000779
 ink-store:10000783
 f452025-miyakonojo:10007288
 colorfulbox:10135379
+vastsky-store:10000754
