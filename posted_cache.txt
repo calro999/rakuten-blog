@@ -1796,3 +1796,4 @@ ink-store:10000783
 f452025-miyakonojo:10007288
 colorfulbox:10135379
 vastsky-store:10000754
+sheishei:10022126
