@@ -1783,3 +1783,4 @@ kkdirect:10053167
 importgoods-ie:10001680
 f011002-sapporo:10000859
 funlnn:10015395
+redcabin:10001642
