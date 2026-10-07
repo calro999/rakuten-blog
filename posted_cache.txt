@@ -1825,3 +1825,4 @@ f032140-hachimantai:10000093
 f142077-chigasaki:10001232
 rack-kan:10096385
 f282219-tambasasayama:10000915
+niigata-shop:10003578
