@@ -1850,3 +1850,4 @@ fudanzukainoomise:10010518
 e-dollar:10007326
 dinos:11151086
 telenty:10004529
+f232157-inuyama:10000542
