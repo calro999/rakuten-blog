@@ -1866,3 +1866,4 @@ babi-furniture:10000185
 risopale:10000345
 ymworld:10022559
 golwis:10001812
+auc-kaei-trading:10000335
