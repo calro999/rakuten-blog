@@ -1846,3 +1846,4 @@ f261009-kyoto:10008807
 mat-rug:10004445
 f212067-nakatsugawa:10001258
 sasutenalife:10031722
+fudanzukainoomise:10010518
