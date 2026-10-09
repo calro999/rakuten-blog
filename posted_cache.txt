@@ -1869,3 +1869,4 @@ golwis:10001812
 auc-kaei-trading:10000335
 denzo:10002506
 rack-kan:10101040
+kagudanchi:10009529
