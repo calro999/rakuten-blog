@@ -1931,3 +1931,4 @@ shop-polite:10234429
 diydiy:10001066
 kagunavi:10078873
 mber:10000414
+asia-kobo:10018040
