@@ -1927,3 +1927,4 @@ grazia-doris:10011472
 himawari666:10001784
 f141003-yokohama:10000858
 interform-inc:10003939
+shop-polite:10234429
