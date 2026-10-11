@@ -1915,3 +1915,4 @@ hokkaido-bussankan:10000724
 denzo:10001628
 t-a-l:10005328
 f122262-futtsu:10001046
+panel-c:10000468
