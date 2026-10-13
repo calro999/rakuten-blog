@@ -1961,3 +1961,4 @@ f212067-nakatsugawa:10000183
 hotchpotch-house:10012367
 f342157-etajima:10000888
 vogue-interior:10007154
+isseiki:10022966
