@@ -1964,3 +1964,4 @@ vogue-interior:10007154
 isseiki:10022966
 livingut:10145121
 e-prism:10196288
+attara-store:10002562
