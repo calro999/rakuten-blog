@@ -2003,3 +2003,4 @@ pregalostore:10006336
 rcmdin:11411218
 hanbokhome:10121149
 f405442-hirokawa:10000916
+interior-palette:10188448
