@@ -1992,3 +1992,4 @@ yukashop02:10000687
 takayama-shop:10000517
 craftpark-k5-shop:10000848
 f013030-tobetsu:10000132
+trust-nine:10002996
