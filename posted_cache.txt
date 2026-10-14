@@ -1989,3 +1989,4 @@ arne-style:10092225
 toyu22:10012484
 add-kitchen:10285933
 yukashop02:10000687
+takayama-shop:10000517
