@@ -1984,3 +1984,4 @@ mottainaiya:10001010
 cocoterior:10012986
 smartplus:10000889
 e-dollar:10001286
+singlelife:10024801
