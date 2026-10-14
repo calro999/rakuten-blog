@@ -2007,3 +2007,4 @@ interior-palette:10188448
 nestinterior:10002256
 mzymzy:10782686
 f212032-takayama:10002788
+kyoto-meglas:10000983
