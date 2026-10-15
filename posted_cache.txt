@@ -2038,3 +2038,4 @@ okeya-2020:10003312
 stgdesignlabo:10002069
 goodproducts-plaza:10000287
 beaubelle:10001990
+yamasoro:10000240
