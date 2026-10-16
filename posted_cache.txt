@@ -2048,3 +2048,4 @@ collagenkirei:10002391
 f402303-itoshima:10001208
 f304018-shirahama:10000799
 esupply:10101771
+so-factory:10000357
