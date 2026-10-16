@@ -2045,3 +2045,4 @@ netkagu-banban:10020046
 maisonplus:10001368
 f272264-fujiidera:10000182
 collagenkirei:10002391
+f402303-itoshima:10001208
