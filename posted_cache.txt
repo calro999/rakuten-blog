@@ -2041,3 +2041,4 @@ beaubelle:10001990
 yamasoro:10000240
 importgoods-ie:10001590
 f016314-otofuke:10000007
+netkagu-banban:10020046
