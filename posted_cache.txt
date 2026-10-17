@@ -2067,3 +2067,4 @@ f012025-hakodate:10001127
 grandeshop:10020002
 zakka-elements:10009969
 ashop:10003904
+interior-palette:10076855
