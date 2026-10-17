@@ -146,18 +146,30 @@ def fetch_rakuten_items(app_id: str, access_key: str, affiliate_id: str, keyword
             for entry in data.get("Items", []):
                 item_data = entry.get("Item", {})
                 if item_data:
-                    image_url = ""
-                    medium_images = item_data.get("mediumImageUrls", [])
-                    if medium_images and isinstance(medium_images, list) and len(medium_images) > 0:
-                        image_url = medium_images[0].get("imageUrl", "")
+                    # 高解像度画像URLの収集（?_ex=... を除去して原寸高解像度化）
+                    api_images = []
+                    for img_obj in item_data.get("mediumImageUrls", []):
+                        u = img_obj.get("imageUrl", "")
+                        if u:
+                            clean_u = u.split("?")[0]
+                            if clean_u not in api_images:
+                                api_images.append(clean_u)
+                    for img_obj in item_data.get("smallImageUrls", []):
+                        u = img_obj.get("imageUrl", "")
+                        if u:
+                            clean_u = u.split("?")[0]
+                            if clean_u not in api_images:
+                                api_images.append(clean_u)
                     
                     items.append({
                         "title": item_data.get("itemName"),
                         "itemCaption": item_data.get("itemCaption", ""),
                         "affiliateUrl": item_data.get("affiliateUrl"),
+                        "itemUrl": item_data.get("itemUrl", ""),
                         "itemCode": item_data.get("itemCode"),
                         "price": f"{item_data.get('itemPrice', '')}円",
-                        "imageUrl": image_url
+                        "imageUrl": api_images[0] if api_images else "",
+                        "imageUrls": api_images
                     })
             return items
     except urllib.error.HTTPError as e:
@@ -171,6 +183,84 @@ def fetch_rakuten_items(app_id: str, access_key: str, affiliate_id: str, keyword
     except Exception as e:
         print(f"Failed to fetch from Rakuten Ichiba API: {e}")
         return []
+
+def extract_rakuten_highres_images(item: dict, max_images: int = 6) -> list:
+    """
+    楽天APIおよび商品ページから高解像度の商品画像（3〜6枚）を確実に抽出する。
+    バナー・ロゴ・アイコン等を除外し、クリーンな原寸画像URLのリストを返す。
+    """
+    images = []
+    
+    # 1. 楽天APIから取得済みの画像（?_ex=... を除去した原寸画像）
+    for img in item.get("imageUrls", []):
+        clean_img = img.split("?")[0]
+        if clean_img and clean_img not in images:
+            images.append(clean_img)
+            
+    # 2. 商品ページのURLを取得して詳細・スライダー画像を追加抽出
+    item_url = item.get("itemUrl") or item.get("affiliateUrl") or ""
+    pc_url = ""
+    if "pc=" in item_url:
+        try:
+            parsed = urllib.parse.urlparse(item_url)
+            qs = urllib.parse.parse_qs(parsed.query)
+            if "pc" in qs and qs["pc"]:
+                pc_url = qs["pc"][0]
+        except Exception:
+            pass
+    elif "item.rakuten.co.jp" in item_url:
+        pc_url = item_url
+
+    if pc_url and len(images) < max_images:
+        print(f"Scraping high-res slider images from product page: {pc_url}...")
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(
+                    headless=True,
+                    args=["--disable-blink-features=AutomationControlled"]
+                )
+                page = browser.new_page(
+                    user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                )
+                page.goto(pc_url, timeout=20000, wait_until="domcontentloaded")
+                time.sleep(2)
+                
+                img_elements = page.locator('img').all()
+                for el in img_elements:
+                    src = el.get_attribute("src") or ""
+                    # 楽天のスライダー画像・キャビネット画像をターゲットにする
+                    if any(domain in src for domain in ["tshop.r10s.jp", "thumbnail.image.rakuten.co.jp", "image.rakuten.co.jp"]):
+                        clean_src = src.split("?")[0]
+                        # 拡張子チェック（jpg, jpeg, png, webp のみ許可、gifや無拡張子は除外）
+                        ext = clean_src.lower().split(".")[-1]
+                        if ext not in ["jpg", "jpeg", "png", "webp"]:
+                            continue
+                        # バナー・ロゴ・キャンペーン・アイコン画像を除外
+                        ignore_keywords = [
+                            "logo", "banner", "campaign", "ranking", "eco_", "outlet",
+                            "icon", "btn", "point", "coupon", "review",
+                            "bn_", "bn.", "bntop", "ui1", "ui2", "ui3", "spacer",
+                            "link_pro", "other/ui", "common", "header", "footer"
+                        ]
+                        if any(kw in clean_src.lower() for kw in ignore_keywords):
+                            continue
+                        if clean_src not in images:
+                            images.append(clean_src)
+                            if len(images) >= max_images:
+                                break
+                browser.close()
+        except Exception as e:
+            print(f"Notice: Product page high-res image extraction skipped or timed out: {e}")
+
+    # 最低3枚、最大6枚に調整
+    if not images:
+        images = ["https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80"]
+    while len(images) < 3:
+        # 3枚未満の場合は既存画像を再利用
+        images.append(images[len(images) % len(images)])
+
+    print(f"Successfully prepared {len(images[:max_images])} high-resolution images for article.")
+    return images[:max_images]
 
 def get_mock_items(keyword: str) -> list:
     """ドライラン用のモックデータを生成。"""
@@ -415,8 +505,11 @@ def main():
                 affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
                 print(f"Surgically applied your Affiliate ID: {rakuten_affiliate_id}")
 
-    # 5. LLMで紹介記事（HTML形式）を生成
-    print("Generating Review Article...")
+    # 5. LLMで超高品質なフル構成レビュー記事（HTML形式）を生成
+    print("Extracting high-resolution product images (3-6 images)...")
+    highres_images = extract_rakuten_highres_images(target_item, max_images=6)
+
+    print("Generating High-Quality Full Review Article...")
     article_gen = ArticleGenerator()
     article_gen.load_model()
     
@@ -431,27 +524,14 @@ def main():
         "search_keyword": keyword
     }
     
-    llm_section = article_gen.generate_review_article(generator_input_item)
+    article_content = article_gen.build_full_featured_article(
+        item=generator_input_item,
+        image_urls=highres_images,
+        affiliate_url=affiliate_url
+    )
 
     # APIの連続呼び出し（429エラー）を回避するため少し待機
     time.sleep(3)
-
-    # 画像HTML、CTAアフィリエイトリンクボタンを追加して完成HTMLを作る
-    product_image_url = target_item.get("imageUrl", "")
-    if not product_image_url:
-        product_image_url = "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80"
-
-    img_html = f'<img src="{product_image_url}" alt="{clean_title}" style="max-width: 100%; height: auto; border-radius: 8px;">'
-    
-    cta_html = article_gen.generate_dynamic_cta(
-        clean_title=clean_title,
-        search_keyword=keyword,
-        caption=target_item.get("itemCaption", ""),
-        affiliate_url=affiliate_url
-    )
-    
-    ad_tag = '<pointad pointad-id="div-plaza-point-ad" pointad-text="#ブロ活広告#" /><br /><br />'
-    article_content = f"{img_html}\n{llm_section}\n{cta_html}\n{ad_tag}"
     
     # 記事タイトル（CTR重視の魅力的なタイトルを生成）
     print("Generating Blog Title...")

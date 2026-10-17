@@ -88,6 +88,7 @@ class ArticleGenerator:
             ("GitHub Models (gpt-4o)", lambda p, s: self._generate_with_github_models(p, s, model_name="gpt-4o")),
             ("GitHub Models (Phi-3.5-mini)", lambda p, s: self._generate_with_github_models(p, s, model_name="Phi-3.5-mini-instruct")),
             ("HuggingFace (Qwen-2.5-72B)", self._generate_with_huggingface),
+            ("Pollinations AI (Fast)", self._generate_with_pollinations),
         ]
 
         # 最大3ラウンド試行（モデル切替＋待機）
@@ -109,7 +110,7 @@ class ArticleGenerator:
 
         # 万一すべてのLLM接続が全滅した場合でもActionsを落とさず（クラッシュ防止）、ジャンル完全適合の安全レビューを生成
         print(f"Warning: Online LLM APIs unavailable for {task_name}. Building safe genre-adapted content.")
-        if item_context and task_name == "Article Content":
+        if item_context and task_name in ["Article Content", "Full Review Article"]:
             return self._build_safe_genre_article(item_context)
         elif item_context and task_name == "Blog Title":
             return self._build_safe_genre_title(item_context)
@@ -126,22 +127,34 @@ class ArticleGenerator:
         genre = self._detect_genre(clean_title, keyword, caption)
 
         if genre in ["sweets", "food", "furusato"]:
-            p1 = f"<p>仕事や家事の合間に、ほっと一息つけるおいしいスイーツがあると気分転換にもぴったりですね。今回ご紹介する<b>{clean_title}</b>は、そんな贅沢なカフェタイムや手土産にもおすすめの逸品です。</p>"
-            p2 = f"<p><b>■ 実際にチェックしておきたい推しポイント</b><br>・素材本来の上品な風味と豊かなコクが広がる満足感の高い仕上がり<br>・職人の丁寧な製法で、しっとりなめらかな食感を追求<br>・個包装や丁寧なパッケージで、来客時のおもてなしやギフトにも便利</p>"
-            p3 = f"<p>賞味期限や保存方法はお届け時に確認しておくと安心ですが、ひとくち食べるだけで疲れがすっと癒やされるような美味しさ。ちょっとしたご褒美や家族での団らんに、ぜひチェックしてみてはいかがでしょうか。</p>"
+            p1 = f"<p>仕事や家事の合間に、ほっと一息つけるおいしいスイーツがあると気分転換にもぴったり。今回手にとってみた<b>{clean_title}</b>は、そんな贅沢なカフェタイムや手土産の候補として大人の部屋にもしっくり馴染む佇まいを持っています。</p>"
+            p2 = f"<p>素材本来の自然な風味と豊かなコクを存分に生かした製法で、余計な雑味がなく<b>ひとくち目から広がる贅沢な香り</b>が印象的。職人のこだわりが詰まった上品な仕立てです。</p>"
+            p3 = f"<p>しっとりなめらかな舌触りと濃厚な甘みのバランスが絶妙で、<b>コーヒーや紅茶はもちろん、緑茶との相性も抜群</b>。ひと息つきたいリラックスタイムに、何気ない日常を贅沢な時間へと変えてくれます。</p>"
+            p4 = f"<p>パッケージデザインも上品で落ち着きがあり、<b>個包装で扱いやすい設計</b>なのも好印象。来客時のおもてなしや、大切な方への季節の贈り物としても安心して選べる安心感があります。</p>"
+            p5 = f"<p>賞味期限や保存方法もお届け時に確認しておくと安心ですが、日持ちや温度管理に配慮された親切な仕様。<b>自分へのささやかなご褒美</b>としても心から満たされる仕上がりです。</p>"
+            p6 = f"<p>「日常にちょっとした上質さをプラスしたい」「間違いのない美味しいスイーツを手元に置いておきたい」という方にぜひ手にとってほしい逸品。家族での団らんにも笑顔が広がる完成度の高い逸品です。</p>"
         elif genre == "kitchen":
-            p1 = f"<p>毎日の料理や食卓の時間を、もっとスムーズで快適にしてくれる<b>{clean_title}</b>。使い勝手の良さと見た目の美しさを両立した頼れるアイテムです。</p>"
-            p2 = f"<p><b>■ 実際にチェックしておきたい推しポイント</b><br>・使い勝手の良さとお手入れのしやすさを両立した実用的な設計<br>・食卓やキッチンにすっきりと馴染むシンプルな佇まい<br>・毎日のデイリー使いにも長く愛用できる丈夫な作り</p>"
-            p3 = f"<p>電子レンジや食洗機への対応など、事前に仕様を確認しておくとより安心ですね。お気に入りのキッチングッズが一つあるだけで、毎日の家事がぐっと楽しくなります。</p>"
+            p1 = f"<p>毎日の料理や食卓の時間を、もっとスムーズで心地よいものに整えたい——そんな思いに自然と応えてくれるのが、この<b>{clean_title}</b>。無駄な装飾のないスマートな佇まいで、キッチンにすっきり溶け込みます。</p>"
+            p2 = f"<p>実際に手に取ってみて実感するのが、<b>ストレスなく使える直感的な扱いやすさ</b>。日々の作業動線を邪魔せず、必要な時にサッと手に取れる絶妙なサイズ感と軽やかさを備えています。</p>"
+            p3 = f"<p>日々のデイリーユースに耐えられる<b>丈夫な素材感と丁寧な作り込み</b>が頼もしく、細部まで使い手の視点に立った機能設計。料理の手際が良くなり、毎日の台所仕事が軽やかになります。</p>"
+            p4 = f"<p>限られた作業スペースやカウンターに置いても視界を遮らない<b>コンパクトでスリムなプロポーション</b>。圧迫感を与えず、食卓の景観を美しく引き締めてくれます。</p>"
+            p5 = f"<p>汚れがサッと落ちやすく<b>お手入れが簡単なメンテナンス性の高さ</b>も大きなメリット。清潔さを長く保ちやすく、後片付けの手間を最小限に抑えてくれる嬉しい工夫が光ります。</p>"
+            p6 = f"<p>「道具をシンプルに整えて、暮らしのリズムを整えたい」というミニマル派にもぴったり。実用性とデザイン性を両立し、毎日の食卓を心地よく支えてくれる名脇役です。</p>"
         elif genre == "appliance":
-            p1 = f"<p>日々の暮らしの手間を減らし、部屋の居心地を格段にアップしてくれる<b>{clean_title}</b>。直感的な操作性と洗練されたデザインが魅力のアイテムです。</p>"
-            p2 = f"<p><b>■ 実際にチェックしておきたい推しポイント</b><br>・直感的に操作できるシンプルな使いやすさと高い機能性を両立<br>・部屋の雰囲気を損なわないスタイリッシュな外観<br>・省エネ性や静音性にも配慮された安心設計</p>"
-            p3 = f"<p>事前の設置スペースや電源環境の確認はおすすめですが、日々の暮らしがぐっと快適になること間違いなし。生活の利便性を底上げしてくれる心強いアイテムです。</p>"
+            p1 = f"<p>日々の暮らしの手間を減らし、部屋の居心地を格段に引き上げてくれる<b>{clean_title}</b>。無駄を削ぎ落としたスタイリッシュな外観が、空間をモダンに引き締めてくれます。</p>"
+            p2 = f"<p>届いてすぐに使える<b>直感的な操作性とストレスフリーな取り回し</b>が魅力。機械が苦手な方でも迷わず扱える親切な設計で、毎日の生活に自然と馴染んでくれます。</p>"
+            p3 = f"<p>静音性や省エネ性にもしっかり配慮されており、<b>時間帯を気にせず快適に使える実力派スペック</b>。暮らしの利便性をぐっと底上げしてくれる頼もしい機能が凝縮されています。</p>"
+            p4 = f"<p>すっきりとしたフォルムで<b>省スペースに収まる絶妙なサイズ感</b>。リビングや寝室の壁際に置いても視界を邪魔せず、空間を広々と開放的に保てます。</p>"
+            p5 = f"<p>耐久性のある上質なマテリアルとさらりとした質感で、<b>ホコリや指紋が目立ちにくく手入れもスムーズ</b>。長く愛用できる信頼感のある仕上がりです。</p>"
+            p6 = f"<p>「暮らしの質をシンプルにアップデートしたい」という方に自信を持っておすすめできるアイテム。毎日の生活にゆとりを生み出し、快適な暮らしのリズムを整えてくれます。</p>"
         else:
-            p1 = f"<p>部屋の模様替えや日々の暮らしのちょっとした見直しに、手軽に取り入れられると人気の<b>{clean_title}</b>。使い勝手とデザインのバランスが絶妙な一品です。</p>"
-            p2 = f"<p><b>■ 実際にチェックしておきたい推しポイント</b><br>・無駄のない洗練されたデザインで、どんな部屋のテイストにも自然にマッチ<br>・日々の扱いやすさやお手入れのしやすさもしっかり考慮された親切設計<br>・届いたその日からすぐに活躍してくれる実用性の高さ</p>"
-            p3 = f"<p>購入前にサイズ感やレイアウトをイメージしておくと失敗しません。いつもの生活空間にすっきり溶け込み、心地よい暮らしのリズムを整えてくれる優秀なアイテムです。</p>"
-        return f"{p1}\n{p2}\n{p3}"
+            p1 = f"<p>「部屋をすっきり片付けたいけれど、重たくて圧迫感のある大型家具は置きたくない…」そんなこだわり派の理想にピタッとハマるのが、この<b>{clean_title}</b>。洗練されたシンプルな佇まいが空間をスマートに引き締め、どんな部屋のテイストにも自然に溶け込みます。</p>"
+            p2 = f"<p>実際に扱ってみて驚くのが、<b>道具いらずで誰でもスムーズに形にできる組み立てやすさ</b>。本体も驚くほど軽量に仕上げられており、模様替えや床の掃除機がけの際も片手でヒョイと持ち上げて移動できる身軽さがありながら、しっかりとした頼もしい安定感を誇ります。</p>"
+            p3 = f"<p>オープンシェルフと便利な収納スペースが見事に両立されており、<b>「よく使うアイテムはサッと取れる上段へ」「隠したい小物はスッキリ収納へ」</b>と、メリハリのある使い分けが1台で完結。日常の整理整頓が劇的にスムーズになります。</p>"
+            p4 = f"<p>寸法も非常にスマートに設計されており、<b>奥行きを抑えたスリムなロータイプ設計</b>。ワンルームやベッドサイド、壁際に沿わせて置いても視線を遮らず、空間を広く見せてくれる絶妙なバランスです。</p>"
+            p5 = f"<p>通気性に配慮されたさらりとした素材感が採用されており、<b>湿気やホコリがこもりにくく衣類や小物を優しく保護</b>。日常のお手入れも簡単で、長く清潔に使い続けられる安心設計です。</p>"
+            p6 = f"<p>「家具をできるだけ重厚にしたくない」「機能的でミニマルな部屋づくりを楽しみたい」というニーズに完璧に応えてくれる逸品。実用性とデザインのバランスに優れた名作アイテムです。</p>"
+        return f"{p1}\n\n{p2}\n\n{p3}\n\n{p4}\n\n{p5}\n\n{p6}"
 
     def _build_safe_genre_title(self, item: Dict[str, Any]) -> str:
         clean_title = item.get("clean_title", "おすすめ商品")
@@ -234,6 +247,122 @@ class ArticleGenerator:
         html_output = re.sub(r'<a\s+[^>]*>', add_target_blank, raw_article)
         return html_output
 
+    def build_full_featured_article(self, item: Dict[str, Any], image_urls: list, affiliate_url: str) -> str:
+        """
+        Amazon高品質記事と同等以上の完成度を実現するフル構成レビュー記事ビルダー。
+        3〜6枚の高解像度画像と各段落を交互に美しくサンドイッチし、
+        中盤・終盤に洗練されたCTAリンクボタンを配置、末尾にブロ活タグを挿入する。
+        """
+        title = item.get("title", "")
+        search_keyword = item.get("search_keyword", "")
+        clean_title = item.get("clean_title") or self.get_clean_product_name(title, search_keyword)
+        price = item.get("price", "")
+        caption = item.get("caption", "")
+        
+        # 使用する画像の枚数（最低3枚、最大6枚）
+        num_images = max(3, min(len(image_urls), 6))
+        
+        prompt = f"""あなたは「本当に良いものを自分の言葉で本音レビューする大人気の暮らしブロガー」です。
+以下の楽天市場の商品情報を徹底的に読み込み、定型文や使い回しのテンプレート感を完全に排除して、この商品「だけ」にしかない魅力・スペック・使い勝手を熱量たっぷりに語る超高品質な長文レビュー記事を作成してください。
+
+【商品名】: {title}
+【クリーン商品名】: {clean_title}
+【価格】: {price}
+【商品の説明】: {caption}
+【検索キーワード】: {search_keyword}
+【希望段落数】: ちょうど{num_images}個の段落（<p>...</p>）
+
+【超重要執筆ルール（完全脱テンプレ・高成約率CVR）】:
+1. 【中性的（ジェンダーレス）かつ少しフレンドリーな本音レビュー口調】:
+   ・「私」「あたし」「僕」などの一人称は一切使わないでください（主語は自然に省略）。
+   ・「〜なの」「〜かしら」「〜わ」「〜よね」などの女性的な語尾や、「〜だぜ」「〜ぜ」などの男性的すぎる語尾は完全に禁止です。
+   ・「〜ですね」「〜な点も便利」「〜なところも助かります」「〜な使い勝手」「〜してみるのもおすすめ」など、性別を感じさせないフラットで中性的、かつ親しみやすいフレンドリーなブログ口調で執筆してください。
+   ・語尾がすべて「〜〜です」「〜〜ます」で終わる機械的なAI文章は厳禁です。適度に体言止めや共感・感想を織り交ぜてください。
+   ・「そんな日常のプチストレスを解消してくれるのが〜」「実際に使って便利だと感じるポイントは〜」「いかがでしょうか」などの決まりきったAI構文・テンプレート表現は絶対に禁止です。
+
+2. 【段落構成（必ず{num_images}個の<p>段落を出力すること）】:
+   各段落は独立した充実した文章（各段落120〜200文字程度）とし、重要なポイントや数値・素材を <b> タグで太字にしてください。
+   各段落のテーマ目安：
+   ・段落1: 【導入・空間の佇まい】部屋の片付けや収納・生活感の悩み、大掛かりな家具を置きたくない心理、商品の第一印象やシンプルモダンな佇まい・部屋にすっと溶け込むデザイン性。
+   ・段落2: 【組み立て・重量・扱いやすさ】ネジや工具の有無（工具不要や直感組み立て）、本体の軽さ（約○kg、掃除や模様替えの身軽さ）、骨組みの剛性感・安定感。
+   ・段落3: 【機能・収納力・耐荷重】棚の段数や引き出しの仕様、見せる収納と隠す収納の使い分け、耐荷重や日常の洋服・タオルの収まりやすさ。
+   ・段落4: 【サイズ感・レイアウト】詳しい寸法（幅・奥行・高さ）、腰高やスリム設計による圧迫感のなさ、ワンルームや寝室・クローゼットへの配置感。
+   ・段落5: 【素材・通気性・使い心地】ファブリックや素材の質感、通気性や湿気対策、衣類を傷めない配慮、毎朝の服選びがスムーズになる使いやすさ。
+   ・段落6: 【総括・おすすめ層・コスパ】どんな人に向いているか（引っ越しが多い人、ミニマリスト、家具を重くしたくない人等）、コスパと実用性の高さ。
+   ※商品がスイーツ・食品の場合は、【1:出会いと見た目の贅沢さ】【2:素材のこだわり・製法・香り】【3:食感や濃厚な味わい】【4:内容量・個包装・日持ちの安心感】【5:おすすめの食べ方・ペアリング】【6:ご褒美やギフトへの総括】としてください。
+
+3. 【フォーマット】:
+   ・出力は <p>...</p> タグで囲まれた段落のみを出力してください（見出しタグ、divタグ、ボタン、リストは含めないでください）。
+"""
+        raw_article = self._call_llm_with_retries(prompt, min_length=300, task_name="Full Review Article", item_context={**item, "clean_title": clean_title})
+        
+        # メタ文言のクリーニング
+        raw_article = re.sub(r"^(はい、|承知いたしました。|以下が商品紹介記事です。|以下に記事を出力します。|以下が執筆した記事です。)\s*", "", raw_article)
+        
+        # 段落（<p>タグ）を抽出
+        paragraphs = re.findall(r'<p>(.*?)</p>', raw_article, flags=re.DOTALL)
+        if not paragraphs:
+            # <p>タグがない場合は改行で分割
+            raw_blocks = [b.strip() for b in raw_article.split("\n\n") if b.strip()]
+            paragraphs = [b for b in raw_blocks if not b.startswith("<")]
+            if not paragraphs:
+                paragraphs = [raw_article]
+
+        # 画像リストの整備
+        clean_images = []
+        for img in image_urls:
+            if img and img not in clean_images:
+                clean_images.append(img)
+        
+        # 足りない場合はフォールバック
+        if not clean_images:
+            clean_images = ["https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80"]
+        while len(clean_images) < len(paragraphs):
+            clean_images.append(clean_images[-1])
+
+        # CTAボタンのスタイル定義（見本記事の上品なボタンデザイン）
+        cta_btn_mid = (
+            f'<div style="text-align: center; margin: 28px 0;">\n'
+            f'<a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 85%; max-width: 320px; padding: 13px 0; background-color: #f4f2ee; color: #333333; border: 1px solid #e0ded9; border-radius: 20px; font-size: 14px; font-weight: bold; text-align: center; text-decoration: none;"><span style="text-decoration: none;">楽天市場で見る</span>\n'
+            f'</a></div>'
+        )
+        cta_btn_end = (
+            f'<div style="text-align: center; margin: 28px 0;">\n'
+            f'<a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 85%; max-width: 320px; padding: 13px 0; background-color: #f4f2ee; color: #333333; border: 1px solid #e0ded9; border-radius: 20px; font-size: 14px; font-weight: bold; text-align: center; text-decoration: none;"><span style="text-decoration: none;">楽天市場で詳細をチェック</span>\n'
+            f'</a></div>'
+        )
+
+        alt_suffixes = [
+            "全体像", "収納イメージ・利用風景", "引き出しと棚の仕様・ディテール",
+            "側面ディテール・サイズ感", "素材感と質感", "活用シーン・おすすめポイント"
+        ]
+
+        full_html_parts = []
+        mid_point = max(2, len(paragraphs) // 2)
+
+        for i, p_text in enumerate(paragraphs):
+            # 画像の挿入
+            img_url = clean_images[i % len(clean_images)]
+            alt_suffix = alt_suffixes[i % len(alt_suffixes)]
+            alt_text = f"{clean_title} {alt_suffix}"
+            img_html = f'<div><img style="max-width: 100%; height: auto; border-radius: 8px; display: block; margin-left: auto; margin-right: auto;" src="{img_url}" border="0" alt="{alt_text}" /></div>'
+            
+            full_html_parts.append(img_html)
+            full_html_parts.append(f"\n\n<p>{p_text.strip()}</p>\n\n")
+
+            # 中盤のCTAボタン
+            if i == (mid_point - 1):
+                full_html_parts.append(f"{cta_btn_mid}\n")
+
+        # 終盤のCTAボタン
+        full_html_parts.append(f"{cta_btn_end}\n\n")
+
+        # ブロ活広告タグ
+        ad_tag = '<pointad pointad-id="div-plaza-point-ad" pointad-text="#ブロ活広告#" />'
+        full_html_parts.append(ad_tag)
+
+        return "".join(full_html_parts)
+
     def generate_blog_title(self, item: Dict[str, Any]) -> str:
         title = item.get("title", "")
         search_keyword = item.get("search_keyword", "")
@@ -291,7 +420,7 @@ class ArticleGenerator:
             return f"【{name}】通信エラー({status_code}): レスポンス内容: {response_text}"
 
     def _discover_gemini_models(self, api_key: str) -> list:
-        """Gemini APIキーを使って利用可能な最新モデル一覧を動的に取得する"""
+        """Gemini APIキーを使って利用可能な最新モデル一覧を動的に取得する（1.5系は完全除外）"""
         valid_models = []
         for ver in ["v1beta", "v1"]:
             try:
@@ -301,8 +430,10 @@ class ArticleGenerator:
                     data = resp.json()
                     for m in data.get("models", []):
                         if "generateContent" in m.get("supportedGenerationMethods", []):
-                            # models/gemini-1.5-flash -> gemini-1.5-flash
                             m_name = m.get("name", "").replace("models/", "")
+                            # 1.5系は完全廃止済みのため絶対に使用禁止
+                            if "1.5" in m_name:
+                                continue
                             if m_name and m_name not in valid_models:
                                 valid_models.append((ver, m_name))
             except Exception:
@@ -316,19 +447,27 @@ class ArticleGenerator:
         
         sys_msg = system_prompt or "あなたは読者の日常の悩みに寄り添い、商品のリアルな使い心地・具体的なメリット・注意点を本音で伝える凄腕の暮らしブロガーです。AI特有の抽象的な美辞麗句や説明書のような機械的表現は完全に排除し、自然で説得力のある日本語のHTML本文のみを出力します。"
         
-        # 動的に利用可能なモデルを取得
+        # 動的に利用可能なモデルを取得（1.5系除外）
         discovered = self._discover_gemini_models(api_key)
         if specific_model:
             model_candidates = [("v1beta", specific_model), ("v1", specific_model)]
         elif discovered:
             model_candidates = discovered
         else:
+            # 最新対応モデルのローテーション
             model_candidates = [
-                ("v1beta", "gemini-1.5-flash-latest"),
-                ("v1beta", "gemini-1.5-flash"),
-                ("v1", "gemini-1.5-flash"),
-                ("v1beta", "gemini-1.5-pro-latest"),
-                ("v1", "gemini-1.5-pro"),
+                ("v1beta", "gemini-2.5-flash"),
+                ("v1beta", "gemini-2.0-flash"),
+                ("v1beta", "gemini-2.0-flash-lite"),
+                ("v1beta", "gemini-2.5-flash-lite"),
+                ("v1beta", "gemini-2.5-pro"),
+                ("v1beta", "gemini-3-flash"),
+                ("v1beta", "gemini-3.1-pro"),
+                ("v1beta", "gemini-3.1-flash-lite"),
+                ("v1beta", "gemini-3.5-flash-lite"),
+                ("v1beta", "gemini-3.5-flash"),
+                ("v1beta", "gemini-3.6-flash"),
+                ("v1beta", "gemini-3.7-flash"),
             ]
         
         for ver, model in model_candidates:
@@ -475,4 +614,21 @@ class ArticleGenerator:
         return None
 
     def _generate_with_pollinations(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
+        sys_msg = system_prompt or "あなたは読者の日常の悩みに寄り添い、商品のリアルな使い心地・具体的なメリット・注意点を本音で伝える凄腕の暮らしブロガーです。AI特有の抽象的な美辞麗句や説明書のような機械的表現は完全に排除し、自然で説得力のある日本語のHTML本文のみを出力します。"
+        url = "https://text.pollinations.ai/"
+        payload = {
+            "messages": [
+                {"role": "system", "content": sys_msg},
+                {"role": "user", "content": prompt}
+            ],
+            "model": "openai-fast"
+        }
+        try:
+            resp = requests.post(url, json=payload, timeout=40)
+            if resp.status_code == 200:
+                text = resp.text.strip()
+                if text and len(text) > 10:
+                    return text
+        except Exception as e:
+            print(f"DEBUG: Pollinations AI failed: {e}")
         return None
