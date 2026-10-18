@@ -2085,3 +2085,4 @@ kurashi-ec:10001685
 oh2r:10000797
 hanbokhome:10283454
 f014281-naganuma:10000024
+kandar-industry:10000148
