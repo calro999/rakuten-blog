@@ -2097,3 +2097,4 @@ f402036-kurume:10001754
 nestinterior:10002259
 f382141-seiyo:10000543
 auc-kaei-trading:10000423
+f032107-rikuzentakata:10000300
