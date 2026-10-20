@@ -2126,3 +2126,4 @@ clair-kobe:10014442
 auc-claireonline:10000283
 ffws:10004629
 livingut:10228192
+ichikashop:10005035
