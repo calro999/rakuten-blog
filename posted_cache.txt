@@ -2149,3 +2149,4 @@ f032140-hachimantai:10000092
 auc-claireonline:10001024
 wilmart:10028709
 cocolucia:10001223
+kurasiya:10000102
