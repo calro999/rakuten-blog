@@ -2150,3 +2150,4 @@ auc-claireonline:10001024
 wilmart:10028709
 cocolucia:10001223
 kurasiya:10000102
+latuna:10000165
