@@ -2165,3 +2165,4 @@ nexalence:10002135
 takamine:10000311
 f012246-chitose:10000918
 lifestyle-funfun:10034406
+kiyokyou:10002632
