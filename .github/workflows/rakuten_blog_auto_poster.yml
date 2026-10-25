@@ -53,7 +53,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]"
           git pull origin main --rebase || true
-          git add posted_cache.txt || true
-          git commit -m "chore: Update posted cache [skip ci]" || true
+          git add posted_cache.txt recent_categories.json recent_keywords.json || true
+          git commit -m "chore: Update posted cache and genre history [skip ci]" || true
           git push origin main || true
 
