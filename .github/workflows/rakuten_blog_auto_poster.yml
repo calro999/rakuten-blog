@@ -8,7 +8,7 @@ on:
 
 jobs:
   post:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 15 # 止まったままフリーズするのを防ぐタイムアウト設定
     permissions:
       contents: write
@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Playwright Browsers
         run: |
-          playwright install chromium
+          playwright install --with-deps chromium
 
       - name: Run Auto Poster
         env:
