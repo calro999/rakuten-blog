@@ -1,0 +1,70 @@
+name: Rakuten Blog Batch Poster
+
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: '生成・投稿する記事数（デフォルト: 40記事）'
+        required: true
+        default: '40'
+      post_mode:
+        description: '投稿モード（publish: 即時公開, draft: 下書き保存）'
+        required: true
+        default: 'draft'
+        type: choice
+        options:
+          - draft
+          - publish
+
+jobs:
+  batch_post:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360 # 最大6時間の長時間バッチ対応
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Browsers
+        run: |
+          playwright install --with-deps chromium
+
+      - name: Run Batch Poster
+        env:
+          PYTHONUNBUFFERED: "1"
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          RAKUTEN_BLOG_ID: ${{ secrets.RAKUTEN_BLOG_ID }}
+          RAKUTEN_BLOG_SESSION_B64: ${{ secrets.RAKUTEN_BLOG_SESSION_B64 }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          HF_API_KEY: ${{ secrets.HF_API_KEY }}
+          BATCH_COUNT: ${{ github.event.inputs.count }}
+          POST_MODE: ${{ github.event.inputs.post_mode }}
+        run: |
+          python batch_runner.py
+
+      - name: Commit and push cache update
+        if: always()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]"
+          git pull origin main --rebase || true
+          git add posted_cache.txt recent_categories.json recent_keywords.json || true
+          git commit -m "chore: Batch update cache and genre history [skip ci]" || true
+          git push origin main || true
