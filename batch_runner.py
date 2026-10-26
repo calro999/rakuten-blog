@@ -9,7 +9,7 @@ print = lambda *args, **kwargs: builtins.print(*args, flush=True, **kwargs)
 
 from auto_poster import (
     load_cache, save_cache, load_json_history, save_json_history,
-    select_next_category_and_keyword, fetch_rakuten_items,
+    generate_diverse_keyword, fetch_rakuten_items,
     is_forbidden_item, extract_rakuten_highres_images,
     CACHE_FILE, RECENT_CATEGORIES_FILE, RECENT_KEYWORDS_FILE,
     EXPANDED_CATEGORIES, CATEGORY_NAMES
@@ -62,10 +62,15 @@ def run_batch():
         target_item = None
         selected_cat = None
         keyword = None
+        attempted_cats = []
 
-        # 最大10回リトライして未投稿かつ規約に違反しない商品を探す
-        for attempt in range(10):
-            selected_cat, keyword = select_next_category_and_keyword(recent_categories, recent_keywords)
+        # 直近のジャンルを除外しつつ未投稿かつ規約に違反しない商品を探す
+        for attempt in range(15):
+            selected_cat, keyword = generate_diverse_keyword(excluded_categories=attempted_cats)
+            attempted_cats.append(selected_cat)
+            if len(attempted_cats) >= len(EXPANDED_CATEGORIES):
+                attempted_cats.clear()
+
             cat_name = CATEGORY_NAMES.get(selected_cat, selected_cat)
             print(f"Attempt {attempt+1}: Category [{cat_name}], Keyword [{keyword}]")
             
@@ -73,7 +78,8 @@ def run_batch():
             for it in items:
                 code = it.get("itemCode")
                 title = it.get("title", "")
-                if code and code not in posted_cache and not is_forbidden_item(title):
+                caption = it.get("itemCaption", "")
+                if code and code not in posted_cache and not is_forbidden_item(title, caption):
                     target_item = it
                     break
             
