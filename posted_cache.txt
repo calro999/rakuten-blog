@@ -2254,3 +2254,4 @@ attara-store:10001838
 canffy:10002407
 sunday-morning:10051434
 e-kurashi:10006164
+enetroom:10044953
