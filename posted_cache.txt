@@ -2288,3 +2288,4 @@ iwaki-kitchenshop:10002028
 t-pro:10000053
 tokyopt:10000012
 blisstimecoffee:10006423
+gekiyasukaguya:10025438
