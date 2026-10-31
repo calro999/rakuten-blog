@@ -18,11 +18,16 @@ from article_generator import ArticleGenerator
 from rakuten_blog_api import RakutenBlogAPI
 
 def run_batch():
-    batch_count_str = os.getenv("BATCH_COUNT", "40")
+    batch_count_str = os.getenv("BATCH_COUNT", "5")
     try:
         batch_count = int(batch_count_str)
     except ValueError:
-        batch_count = 40
+        batch_count = 5
+
+    # 5記事より多いとLLMのレートリミットや記事の品質低下を招くため上限を5に制限
+    if batch_count > 5:
+        print(f"Notice: BATCH_COUNT ({batch_count}) exceeds safe quality limit. Automatically capping to 5 articles.")
+        batch_count = 5
 
     post_mode = os.getenv("POST_MODE", "draft").strip().lower()
     print("=" * 60)
@@ -129,8 +134,8 @@ def run_batch():
                 if len(subparts) == 2:
                     affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
 
-        # 高画質画像の抽出
-        highres_images = extract_rakuten_highres_images(target_item, max_images=6)
+        # 高画質画像の抽出（多すぎて見づらくならないよう2〜3枚に厳選）
+        highres_images = extract_rakuten_highres_images(target_item, max_images=3)
 
         # タイトル・記事本文生成
         clean_title = article_gen.get_clean_product_name(target_item["title"], keyword)

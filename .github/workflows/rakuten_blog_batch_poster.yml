@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       count:
-        description: '生成・投稿する記事数（デフォルト: 40記事）'
+        description: '生成・投稿する記事数（最大5記事推奨）'
         required: true
-        default: '40'
+        default: '5'
       post_mode:
         description: '投稿モード（publish: 即時公開, draft: 下書き保存）'
         required: true

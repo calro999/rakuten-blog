@@ -618,8 +618,9 @@ def main():
                 print(f"Surgically applied your Affiliate ID: {rakuten_affiliate_id}")
 
     # 5. LLMで超高品質なフル構成レビュー記事（HTML形式）を生成
-    print("Extracting high-resolution product images (3-6 images)...")
-    highres_images = extract_rakuten_highres_images(target_item, max_images=6)
+    # 画像は多すぎて見づらくならないよう、厳選2〜3枚に設定
+    print("Extracting high-resolution product images (2-3 images)...")
+    highres_images = extract_rakuten_highres_images(target_item, max_images=3)
 
     print("Generating High-Quality Full Review Article...")
     article_gen = ArticleGenerator()
