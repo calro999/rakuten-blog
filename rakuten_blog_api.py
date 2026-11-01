@@ -63,7 +63,159 @@ class RakutenBlogAPI:
         except Exception as e:
             print(f"Warning: Failed to remove overlays: {e}")
 
-    def post_entry(self, title: str, html_content: str, post_mode: str = "draft") -> bool:
+    def _select_category_and_theme(self, page, category_name: str = None, theme_keyword: str = None, genre_id: str = "600"):
+        """
+        楽天ブログ投稿画面で「カテゴリ」と「クチコミテーマ」を適切に自動設定・選択する。
+        1. カテゴリがまだ存在しない場合は /_api/category/add.json 経由で自動作成して選択。
+        2. クチコミテーマは /_api/theme/list.json から関連テーマを検索して設定（見つからない場合は既存候補または代表テーマを設定）。
+        """
+        try:
+            # --- 1. カテゴリの自動選択・追加 ---
+            if category_name:
+                cat_result = page.evaluate('''(catName) => {
+                    try {
+                        const links = Array.from(document.querySelectorAll('#ulcategorylist a.categorylist'));
+                        for (const a of links) {
+                            const title = (a.getAttribute('data-title') || a.textContent || '').trim();
+                            if (title === catName || title.includes(catName)) {
+                                const cid = a.getAttribute('data-id');
+                                document.getElementById('diary_write_d_category_id').value = cid;
+                                const btn = document.querySelector('.editorBlogTitle .select .btn');
+                                if (btn) btn.textContent = a.getAttribute('data-title') || catName;
+                                return { status: 'selected_existing', id: cid, title: title };
+                            }
+                        }
+                        // 見つからない場合は新規カテゴリ追加APIを呼び出す
+                        if (typeof window.$ !== 'undefined' && typeof token !== 'undefined') {
+                            let createdId = null;
+                            window.$.ajax({
+                                type: "GET",
+                                async: false,
+                                dataType: "json",
+                                contentType: "application/json",
+                                url: "/_api/category/add.json",
+                                headers: { "X-CSRF-Token": token },
+                                data: { categoryname: catName }
+                            }).done(function(res) {
+                                if (res && res.response && res.response[1] && res.response[1].result) {
+                                    createdId = String(res.response[1].result);
+                                }
+                            });
+                            if (createdId) {
+                                document.getElementById('diary_write_d_category_id').value = createdId;
+                                const btn = document.querySelector('.editorBlogTitle .select .btn');
+                                if (btn) btn.textContent = catName;
+                                return { status: 'created_new', id: createdId, title: catName };
+                            }
+                        }
+                        // フォールバック：カテゴリ未分類以外の既存カテゴリがあればそれを選択
+                        for (const a of links) {
+                            const cid = a.getAttribute('data-id');
+                            if (cid && cid !== '0') {
+                                document.getElementById('diary_write_d_category_id').value = cid;
+                                const btn = document.querySelector('.editorBlogTitle .select .btn');
+                                if (btn) btn.textContent = a.getAttribute('data-title');
+                                return { status: 'fallback_existing', id: cid, title: a.getAttribute('data-title') };
+                            }
+                        }
+                        return { status: 'kept_default' };
+                    } catch (err) {
+                        return { status: 'error', message: String(err) };
+                    }
+                }''', category_name)
+                print(f"Category selection result: {cat_result}")
+
+            # --- 2. クチコミテーマの自動検索・選択 ---
+            search_kw = (theme_keyword or "インテリア").split()[0]
+            theme_result = page.evaluate('''([kw, gId]) => {
+                try {
+                    // まず /_api/theme/list.json でキーワード検索を試みる
+                    if (typeof window.$ !== 'undefined' && typeof token !== 'undefined') {
+                        let foundTheme = null;
+                        // 1回目: 指定キーワードで検索
+                        window.$.ajax({
+                            type: "GET",
+                            async: false,
+                            url: "/_api/theme/list.json",
+                            dataType: "json",
+                            contentType: "application/json",
+                            headers: { "X-CSRF-Token": token },
+                            data: { title: kw, genre: "0", page: 1 }
+                        }).done(function(res) {
+                            if (res && res.response && res.response[1] && res.response[1].result) {
+                                const results = res.response[1].result;
+                                const keys = Object.keys(results);
+                                if (keys.length > 0) {
+                                    foundTheme = results[keys[0]];
+                                }
+                            }
+                        });
+
+                        // 見つからなかった場合、ジャンル代表ワードで再検索
+                        if (!foundTheme) {
+                            const fallbackWord = gId === "300" ? "お取り寄せ" : (gId === "200" ? "家電" : "インテリア");
+                            window.$.ajax({
+                                type: "GET",
+                                async: false,
+                                url: "/_api/theme/list.json",
+                                dataType: "json",
+                                contentType: "application/json",
+                                headers: { "X-CSRF-Token": token },
+                                data: { title: fallbackWord, genre: "0", page: 1 }
+                            }).done(function(res) {
+                                if (res && res.response && res.response[1] && res.response[1].result) {
+                                    const results = res.response[1].result;
+                                    const keys = Object.keys(results);
+                                    if (keys.length > 0) {
+                                        foundTheme = results[keys[0]];
+                                    }
+                                }
+                            });
+                        }
+
+                        if (foundTheme && foundTheme.theme_id) {
+                            document.getElementById('diary_write_d_theme_id').value = String(foundTheme.theme_id);
+                            document.getElementById('diary_write_d_theme_name').value = foundTheme.theme_title;
+                            const wrap = document.getElementById('wrapSelectTheme');
+                            if (wrap) wrap.style.display = '';
+                            const tTitle = document.getElementById('theme_title');
+                            if (tTitle) tTitle.textContent = foundTheme.theme_title;
+                            return { status: 'selected_via_api', id: foundTheme.theme_id, title: foundTheme.theme_title };
+                        }
+                    }
+
+                    // フォールバック: 画面上の theme_select_1〜4 に一致または先頭があればクリック
+                    const themeLinks = Array.from(document.querySelectorAll('[id^="theme_select_"]'));
+                    if (themeLinks.length > 0) {
+                        for (const a of themeLinks) {
+                            const tName = (a.getAttribute('data-title') || a.textContent || '').trim();
+                            if (tName.includes(kw)) {
+                                a.click();
+                                return { status: 'clicked_preset_match', id: a.getAttribute('data-id'), title: tName };
+                            }
+                        }
+                        // 先頭（素敵なデザインインテリア・雑貨♪ 等）を選択
+                        themeLinks[0].click();
+                        return {
+                            status: 'clicked_first_preset',
+                            id: themeLinks[0].getAttribute('data-id'),
+                            title: themeLinks[0].getAttribute('data-title') || themeLinks[0].textContent
+                        };
+                    }
+
+                    // 最終フォールバック: 定番テーマ「素敵なデザインインテリア・雑貨♪ (219504)」をセット
+                    document.getElementById('diary_write_d_theme_id').value = '219504';
+                    document.getElementById('diary_write_d_theme_name').value = '素敵なデザインインテリア・雑貨♪';
+                    return { status: 'hardcoded_fallback', id: '219504', title: '素敵なデザインインテリア・雑貨♪' };
+                } catch (err) {
+                    return { status: 'error', message: String(err) };
+                }
+            }''', [search_kw, genre_id])
+            print(f"Kuchikomi Theme selection result: {theme_result}")
+        except Exception as e:
+            print(f"Warning: Failed to set category or kuchikomi theme: {e}")
+
+    def post_entry(self, title: str, html_content: str, post_mode: str = "draft", category_name: str = None, theme_keyword: str = None, genre_id: str = "600") -> bool:
         """
         Posts a blog entry to Rakuten Blog using Playwright.
         post_mode: 'draft' (下書き保存) or 'publish' (即時公開)
@@ -273,6 +425,10 @@ class RakutenBlogAPI:
                     print("Error: HTML editor textarea is not visible or editable. Cannot fill body.")
                     self._safe_screenshot(page, "body_fill_error.png")
                     return False
+
+                # カテゴリとクチコミテーマを自動選択・設定
+                print(f"Setting Category ({category_name}) and Kuchikomi Theme ({theme_keyword})...")
+                self._select_category_and_theme(page, category_name=category_name, theme_keyword=theme_keyword, genre_id=genre_id)
 
                 # Take screenshot of filled state
                 self._safe_screenshot(page, "filled_post_draft.png")

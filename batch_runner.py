@@ -12,7 +12,7 @@ from auto_poster import (
     generate_diverse_keyword, fetch_rakuten_items,
     is_forbidden_item, extract_rakuten_highres_images,
     CACHE_FILE, RECENT_CATEGORIES_FILE, RECENT_KEYWORDS_FILE,
-    EXPANDED_CATEGORIES, CATEGORY_NAMES
+    EXPANDED_CATEGORIES, CATEGORY_NAMES, CATEGORY_THEME_GENRES
 )
 from article_generator import ArticleGenerator
 from rakuten_blog_api import RakutenBlogAPI
@@ -159,7 +159,16 @@ def run_batch():
 
         # 楽天ブログへの投稿
         try:
-            success = blog_api.post_entry(title=blog_title, html_content=article_html, post_mode=post_mode)
+            cat_label = CATEGORY_NAMES.get(selected_cat, "暮らし・インテリア")
+            theme_genre_id = CATEGORY_THEME_GENRES.get(selected_cat, "600")
+            success = blog_api.post_entry(
+                title=blog_title,
+                html_content=article_html,
+                post_mode=post_mode,
+                category_name=cat_label,
+                theme_keyword=keyword,
+                genre_id=theme_genre_id
+            )
             if success:
                 print(f"✅ Article {i} saved/posted successfully!")
                 success_count += 1

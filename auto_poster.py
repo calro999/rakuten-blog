@@ -131,6 +131,17 @@ CATEGORY_NAMES = {
     "gourmet_furusato": "ふるさと納税・絶品グルメ"
 }
 
+CATEGORY_THEME_GENRES = {
+    "furniture_storage": "600",   # 生活・インテリア
+    "lighting_decor": "600",      # 生活・インテリア
+    "kitchen_cooking": "600",     # 生活・インテリア
+    "appliances_cleaning": "200", # パソコン・家電
+    "desk_gadget": "200",         # パソコン・家電
+    "bath_sleep_relax": "710",    # 健康・ダイエット
+    "sweets_gift": "300",         # 料理・食べ物
+    "gourmet_furusato": "300"     # 料理・食べ物
+}
+
 # 関連ジャンルID
 GENRE_IDS = ["100804", "215787"]
 
@@ -654,8 +665,17 @@ def main():
     # 6. 楽天ブログへ投稿
     print("Posting to Rakuten Blog...")
     post_mode = os.environ.get("POST_MODE", "draft").strip().lower()
+    cat_label = CATEGORY_NAMES.get(selected_cat, "暮らし・インテリア")
+    theme_genre_id = CATEGORY_THEME_GENRES.get(selected_cat, "600")
     blog_api = RakutenBlogAPI(blog_id=rakuten_blog_id, session_b64=session_b64)
-    success = blog_api.post_entry(title=blog_title, html_content=article_content, post_mode=post_mode)
+    success = blog_api.post_entry(
+        title=blog_title,
+        html_content=article_content,
+        post_mode=post_mode,
+        category_name=cat_label,
+        theme_keyword=keyword,
+        genre_id=theme_genre_id
+    )
 
     if success:
         print("Successfully posted to Rakuten Blog!")

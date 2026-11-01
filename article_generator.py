@@ -125,6 +125,116 @@ class ArticleGenerator:
             
         return "おすすめのアイテムをご紹介します。"
 
+    def _format_sentence_linebreaks(self, paragraph_html: str) -> str:
+        """
+        段落内の文章を読みやすくするため、文の区切り（。！？）の後に
+        適切に1改行（<br /><br />）を挟み、スマホでもスッと頭に入る行間を作る。
+        """
+        # 既存の過剰なbrや改行を一旦正規化
+        text = re.sub(r'(<br\s*/?>\s*)+', '<br /><br />', paragraph_html.strip())
+        text = re.sub(r'\n{2,}', '<br /><br />', text)
+        text = re.sub(r'\n', '', text)
+
+        # すでに適度な <br /><br /> が含まれている場合はそのまま整形して返す
+        if text.count('<br /><br />') >= 1:
+            return text
+
+        # 句点「。」や「！」「？」の直後（ただし閉じ括弧「」』）の後を除く）で文を分割
+        sentences = re.split(r'(?<=[。！？])(?![」』）\)])', text)
+        sentences = [s.strip() for s in sentences if s.strip()]
+        if len(sentences) <= 1:
+            return text
+
+        # 1〜2文ごと（話題の切り替わりや約45文字以上のまとまりごと）に1改行（<br /><br />）を挟む
+        blocks = []
+        current = ""
+        for s in sentences:
+            if not current:
+                current = s
+            else:
+                # 前の文が短い導入でなく、話題が切り替わる場合は1改行挟む
+                clean_curr_len = len(re.sub(r'<[^>]+>', '', current))
+                if clean_curr_len >= 35:
+                    blocks.append(current)
+                    current = s
+                else:
+                    current += s
+        if current:
+            blocks.append(current)
+
+        return "<br /><br />".join(blocks)
+
+    def _validate_and_polish_paragraphs(self, paragraphs: list, item: Dict[str, Any]) -> list:
+        """
+        投稿前の厳格な品質・AI臭さ・整合性チェック。
+        1. AI特有のメタ発言・定型句・不自然な翻訳調の除去
+        2. 商品ジャンルと無関係な誤情報（枕なのに壁掛け・工具・大型家具など）の混入チェック
+        3. 同一スペック（保証期間など）の重複記載の排除
+        4. 文ごとの適切な1改行（<br /><br />）フォーマット適用
+        """
+        clean_title = item.get("clean_title", "おすすめ商品")
+        caption = item.get("caption", "")
+        keyword = item.get("search_keyword", "")
+        genre = self._detect_genre(clean_title, keyword, caption)
+
+        # 1. ジャンル不適合ワードの検査（混入していたら即座に該当段落または全体を安全記事に差し替え）
+        forbidden_by_genre = {
+            "bath_sleep": ["壁に取り付け", "壁掛け", "工具不要", "組み立て", "大型家具", "ネジ", "棚板"],
+            "sweets": ["壁に取り付け", "工具", "組み立て", "大型家具", "配線", "ネジ", "インテリアに馴染む"],
+            "food": ["壁に取り付け", "工具", "組み立て", "大型家具", "配線", "ネジ"],
+            "furusato": ["壁に取り付け", "工具", "組み立て", "大型家具", "配線", "ネジ"],
+            "appliance": ["賞味期限", "口どけ", "ザラメ", "美味しい", "食感"],
+            "desk_gadget": ["賞味期限", "口どけ", "ザラメ", "美味しい", "食感"],
+        }
+        ng_words = forbidden_by_genre.get(genre, [])
+
+        # AI臭いフレーズ・硬い表現を自然で親しみやすい表現へ自動補正
+        ai_cliche_replacements = [
+            (r"いかがでしょうか[。？]?", ""),
+            (r"いかがでしたでしょうか[。？]?", ""),
+            (r"この記事では[^。]+解説します[。]?", ""),
+            (r"今回は[^。]+ご紹介します[。]?", ""),
+            (r"まさに理想的な選択肢と言えるでしょう[。]?", "本当に頼もしい存在です。"),
+            (r"特筆すべきは、?", "特に嬉しいのが、"),
+            (r"過言ではありません[。]?", "言えます。"),
+            (r"実感させられます[。]?", "実感します。"),
+            (r"優位性があります[。]?", "魅力です。"),
+            (r"一助となります[。]?", "助かります。"),
+            (r"一価[。]?", "逸品です。"),
+            (r"呼吸を促進する", "ふわっと広がり、思わず深呼吸したくなります"),
+            (r"カップ麺のつまみごとに", "ちょっとした休憩時間に"),
+        ]
+
+        polished = []
+        seen_warranty = False
+
+        for p in paragraphs:
+            text = p.strip()
+            # ジャンルNGワードが含まれていたら安全フォールバックへ切り替え
+            if any(ng in text for ng in ng_words):
+                print(f" Quality Check Notice: Detected genre mismatch word in paragraph. Using verified genre paragraphs.")
+                return [self._format_sentence_linebreaks(sp) for sp in self._build_safe_genre_paragraphs(item)]
+
+            for pattern, repl in ai_cliche_replacements:
+                text = re.sub(pattern, repl, text)
+
+            # 保証期間などの話が複数の段落で重複していたら2回目以降の文をカット
+            if "保証" in text and ("延長" in text or "メーカー保証" in text or "1年" in text or "2年" in text):
+                if seen_warranty:
+                    # 2回目以降の保証の文を除去
+                    sents = re.split(r'(?<=[。！？])', text)
+                    sents = [s for s in sents if not ("保証" in s and ("延長" in s or "1年" in s or "2年" in s))]
+                    text = "".join(sents).strip()
+                else:
+                    seen_warranty = True
+
+            # 1文ごとの話題切り替えに1改行を挟む
+            formatted_text = self._format_sentence_linebreaks(text)
+            if formatted_text:
+                polished.append(formatted_text)
+
+        return polished
+
     def _build_safe_genre_article(self, item: Dict[str, Any]) -> str:
         clean_title = item.get("clean_title", "おすすめ商品")
         caption = item.get("caption", "")
@@ -379,8 +489,9 @@ class ArticleGenerator:
 4. 【商品ジャンルに100%合致した段落構成】:
    段落テーマ目安：{genre_guide}
 
-5. 【フォーマット】:
+5. 【フォーマット（読みやすい改行の徹底）】:
    ・出力は <p>...</p> タグで囲まれた4つの段落のみを出力してください（見出しタグ、divタグ、ボタン、リストは含めないでください）。
+   ・段落内で1つの文章が終わって違う話題や視点に移る時は、詰まりすぎないよう文の区切りに <br /><br /> を挟んで、スマホでもスッと頭に入る読みやすい行間にしてください。
 """
         raw_article = self._call_llm_with_retries(prompt, min_length=400, task_name="Full Review Article", item_context={**item, "clean_title": clean_title})
         
@@ -419,6 +530,9 @@ class ArticleGenerator:
         if len(paragraphs) < 4 or total_chars < 500:
             paragraphs = self._build_safe_genre_paragraphs(item)
 
+        # 投稿前の品質・AI臭さ・ジャンル整合性チェック＆1文ごとの話題切り替え改行（<br /><br />）整形
+        paragraphs = self._validate_and_polish_paragraphs(paragraphs, {**item, "clean_title": clean_title})
+
         # 画像リストの整備（2〜3枚に厳選）
         clean_images = []
         for img in image_urls:
@@ -433,11 +547,11 @@ class ArticleGenerator:
         while len(clean_images) < 2:
             clean_images.append(clean_images[-1])
 
-        # CTAボタンのスタイル定義（上品な中央配置ボタンデザイン）
+        # CTAボタンのスタイル定義（上下の余白をスッキリ1行分に調整した上品な中央配置ボタンデザイン）
         cta_btn = (
-            f'<div style="text-align: center; margin: 28px 0;">\n'
-            f'<a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 85%; max-width: 320px; padding: 13px 0; background-color: #f4f2ee; color: #333333; border: 1px solid #e0ded9; border-radius: 20px; font-size: 14px; font-weight: bold; text-align: center; text-decoration: none;"><span style="text-decoration: none;">楽天市場で見る</span>\n'
-            f'</a></div>'
+            f'<div style="text-align: center; margin: 14px 0;">'
+            f'<a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 85%; max-width: 320px; padding: 13px 0; background-color: #f4f2ee; color: #333333; border: 1px solid #e0ded9; border-radius: 20px; font-size: 14px; font-weight: bold; text-align: center; text-decoration: none;"><span style="text-decoration: none;">楽天市場で見る</span></a>'
+            f'</div>'
         )
 
         alt_suffixes = [
@@ -445,10 +559,10 @@ class ArticleGenerator:
             "側面ディテール・サイズ感", "素材感と質感", "活用シーン・おすすめポイント"
         ]
 
-        # ユーザー見本＆ご要望に100%合致するレイアウト構成:
+        # ユーザー見本＆ご要望に100%合致するレイアウト構成（画像・CTA上下の改行を1行に統一）:
         # 段落1（商品紹介）
         # → 画像1（クリックで商品ページへ遷移）
-        # → 冒頭写真直下のCTAボタン（成約率CVR最大化）
+        # → 冒頭写真直下のCTAボタン
         # → 段落2
         # → 画像2（クリックで商品ページへ遷移）
         # → 段落3
@@ -459,7 +573,7 @@ class ArticleGenerator:
         full_html_parts = []
         for i, p_text in enumerate(paragraphs):
             # 段落（テキスト）
-            full_html_parts.append(f"<p>{p_text.strip()}</p>\n\n")
+            full_html_parts.append(f"<p>{p_text.strip()}</p>\n")
 
             # 画像の挿入（段落の直後、画像の枚数分だけ配置。aタグでラップして画像クリックで商品ページへ遷移可能に）
             if i < len(clean_images):
@@ -468,17 +582,17 @@ class ArticleGenerator:
                 alt_text = f"{clean_title} {alt_suffix}"
                 img_html = (
                     f'<div><a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">'
-                    f'<img style="max-width: 100%; height: auto; border-radius: 8px; display: block; margin-left: auto; margin-right: auto;" src="{img_url}" border="0" alt="{alt_text}" />'
-                    f'</a></div>\n\n'
+                    f'<img style="max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 12px auto;" src="{img_url}" border="0" alt="{alt_text}" />'
+                    f'</a></div>\n'
                 )
                 full_html_parts.append(img_html)
 
                 # 冒頭の写真（画像1枚目）の直下にCTAボタンを配置
                 if i == 0:
-                    full_html_parts.append(f"{cta_btn}\n\n")
+                    full_html_parts.append(f"{cta_btn}\n")
 
         # 記事末尾のCTAボタン
-        full_html_parts.append(f"{cta_btn}\n\n")
+        full_html_parts.append(f"{cta_btn}\n")
 
         # ブロ活広告タグ
         ad_tag = '<pointad pointad-id="div-plaza-point-ad" pointad-text="#ブロ活広告#" />'
