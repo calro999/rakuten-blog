@@ -2350,3 +2350,4 @@ nissoplus:10000002
 colorfulbox:10150457
 plus-quality:10018236
 yukashop02:10003378
+kadenrand:10154785
