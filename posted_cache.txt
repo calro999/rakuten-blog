@@ -2341,3 +2341,4 @@ risopale:10000102
 mpowjapan:10000907
 betterplanet:10000037
 laduree:10000068
+masintou:10000005
