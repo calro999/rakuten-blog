@@ -159,7 +159,7 @@ def run_batch():
 
         # 楽天ブログへの投稿
         try:
-            success = blog_api.post_entry(title=blog_title, html_content=article_html)
+            success = blog_api.post_entry(title=blog_title, html_content=article_html, post_mode=post_mode)
             if success:
                 print(f"✅ Article {i} saved/posted successfully!")
                 success_count += 1

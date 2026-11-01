@@ -63,8 +63,13 @@ class RakutenBlogAPI:
         except Exception as e:
             print(f"Warning: Failed to remove overlays: {e}")
 
-    def post_entry(self, title: str, html_content: str) -> bool:
-        """Posts a blog entry to Rakuten Blog using Playwright."""
+    def post_entry(self, title: str, html_content: str, post_mode: str = "draft") -> bool:
+        """
+        Posts a blog entry to Rakuten Blog using Playwright.
+        post_mode: 'draft' (下書き保存) or 'publish' (即時公開)
+        下書き保存時に「保存できる下書きの件数は50件までです」の上限エラーが発生した場合は、
+        自動的に公開投稿（diary_write_public_submit）にフォールバックして処理を完遂します。
+        """
         session_path = self._prepare_session_file()
         success = False
 
@@ -273,16 +278,24 @@ class RakutenBlogAPI:
                 self._safe_screenshot(page, "filled_post_draft.png")
 
                 # Submit the post
-                print("Clicking submit/preview/draft button...")
+                print(f"Submitting post (Requested Mode: {post_mode})...")
                 self._remove_overlays(page)
                 
-                # Check for explicit draft submit button first (since we want to save draft)
-                # diary_write_draft_submit is the ID of the "下書き保存" button
+                # ボタンの選択（draftモードかpublishモードか）
                 draft_btn = page.locator('button#diary_write_draft_submit, input#diary_write_draft_submit, button:has-text("下書き保存")').first
+                public_btn = page.locator('button#diary_write_public_submit, input#diary_write_public_submit, button:has-text("公開する")').first
+                
                 submit_selectors = []
-                if draft_btn.is_visible(timeout=2000):
-                    submit_selectors.append('button#diary_write_draft_submit')
-                    print("Explicit '下書き保存' button found. Prioritizing it.")
+                if post_mode == "publish":
+                    if public_btn.is_visible(timeout=2000):
+                        submit_selectors.append('button#diary_write_public_submit')
+                        print("Direct '公開する' button found. Prioritizing publish.")
+                else:
+                    if draft_btn.is_visible(timeout=2000):
+                        submit_selectors.append('button#diary_write_draft_submit')
+                        print("Explicit '下書き保存' button found. Prioritizing draft save.")
+                    if public_btn.is_visible(timeout=2000):
+                        submit_selectors.append('button#diary_write_public_submit')
                 
                 submit_selectors.extend([
                     'input[type="submit"][value*="確認"]',
@@ -325,6 +338,23 @@ class RakutenBlogAPI:
                 current_url = page.url
                 print(f"Current page URL after click: {current_url}")
                 self._remove_overlays(page)
+                
+                # 下書き上限エラーの検知と公開への自動フォールバック
+                page_text = page.locator('body').inner_text()
+                if "保存できる下書きの件数は50件までです" in page_text:
+                    print("⚠️ 楽天ブログの下書き上限（50件）に到達したため、自動的に「公開する」ボタンを押して投稿を完遂します...")
+                    fallback_public_btn = page.locator('button#diary_write_public_submit, input#diary_write_public_submit, button:has-text("公開する")').first
+                    if fallback_public_btn.is_visible(timeout=3000):
+                        fallback_public_btn.scroll_into_view_if_needed()
+                        time.sleep(1)
+                        fallback_public_btn.click(force=True)
+                        print("Clicked '公開する' button as draft limit fallback.")
+                        try:
+                            page.wait_for_load_state("domcontentloaded", timeout=15000)
+                        except Exception:
+                            pass
+                        time.sleep(6)
+                        current_url = page.url
                 
                 confirm_selectors = [
                     'input[type="submit"][value*="掲載"]',

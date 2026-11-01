@@ -653,8 +653,9 @@ def main():
 
     # 6. 楽天ブログへ投稿
     print("Posting to Rakuten Blog...")
+    post_mode = os.environ.get("POST_MODE", "draft").strip().lower()
     blog_api = RakutenBlogAPI(blog_id=rakuten_blog_id, session_b64=session_b64)
-    success = blog_api.post_entry(title=blog_title, html_content=article_content)
+    success = blog_api.post_entry(title=blog_title, html_content=article_content, post_mode=post_mode)
 
     if success:
         print("Successfully posted to Rakuten Blog!")
