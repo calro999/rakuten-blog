@@ -2378,3 +2378,4 @@ f452025-miyakonojo:10001348
 bimajyo:10000111
 edenki:22304086
 irodori-street:10000240
+akisada-shop:10003147
