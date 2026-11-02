@@ -2372,3 +2372,4 @@ relaxsy:10000302
 lifecorner:10002174
 kamachu:10002513
 roomy-garden:10015287
+saibashop01:10228199
