@@ -64,6 +64,58 @@ class RakutenBlogAPI:
         except Exception as e:
             print(f"Warning: Failed to remove overlays: {e}")
 
+    def get_draft_count(self) -> int:
+        """
+        楽天ブログの下書き一覧ページ（/diary/list/draft/）から現在の下書き件数を取得する。
+        取得失敗時は安全のため -1 を返す。
+        """
+        session_path = self._prepare_session_file()
+        count = -1
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(
+                    headless=True,
+                    args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-gpu"]
+                )
+                context_args = {
+                    "viewport": {"width": 1280, "height": 800},
+                    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                if session_path:
+                    context_args["storage_state"] = session_path
+                context = browser.new_context(**context_args)
+                page = context.new_page()
+                page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+                draft_url = "https://my.plaza.rakuten.co.jp/diary/list/draft/"
+                print(f"Checking draft count from: {draft_url}")
+                page.goto(draft_url, wait_until="domcontentloaded", timeout=30000)
+                time.sleep(3)
+
+                page_html = page.content()
+                import re
+                # ページャー表示（例: "1-10 / 47件" または "0件"）を抽出
+                m = re.search(r'/\s*(\d+)\s*件', page_html)
+                if m:
+                    count = int(m.group(1))
+                    print(f"Current total drafts count: {count}件")
+                elif "下書き日記はありません" in page_html or "0件" in page_html:
+                    count = 0
+                    print("Current total drafts count: 0件")
+                else:
+                    # 簡易件数カウント（リスト内のアイテム数）
+                    items = page.locator('ul.modList01 li').count()
+                    if items > 0:
+                        count = items
+                        print(f"Fallback draft count (visible list items): {count}")
+                browser.close()
+        except Exception as e:
+            print(f"Warning: Failed to fetch draft count: {e}")
+        finally:
+            if session_path and session_path != self.session_file and os.path.exists(session_path):
+                os.remove(session_path)
+        return count
+
     def _select_category_and_theme(self, page, category_name: str = None, theme_keyword: str = None, genre_id: str = "600"):
         """
         楽天ブログ投稿画面で「カテゴリ」と「クチコミテーマ」を適切に自動設定・選択する。

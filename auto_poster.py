@@ -570,71 +570,38 @@ def is_forbidden_item(title: str, caption: str = "") -> bool:
     text = (title + " " + caption).lower()
     return any(term.lower() in text for term in FORBIDDEN_TERMS)
 
-def main():
-    print("=== Starting Rakuten Interior/Goods Blog & Room Poster ===")
-    
-    # ローカルの .env ファイルがあれば読み込む
-    if os.path.exists(".env"):
-        print("Loading environment variables from .env file...")
-        with open(".env", "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, val = line.split("=", 1)
-                    os.environ[key.strip()] = val.strip().strip('"').strip("'")
-    
-    rakuten_app_id = os.environ.get("RAKUTEN_APP_ID", "DUMMY_APP_ID")
-    rakuten_access_key = os.environ.get("RAKUTEN_ACCESS_KEY", "")
-    rakuten_affiliate_id = os.environ.get("RAKUTEN_AFFILIATE_ID", "DUMMY_AFFILIATE_ID")
-    
-    rakuten_blog_id = os.environ.get("RAKUTEN_BLOG_ID", "")
-    
-    # 楽天ブログ・ROOM共有のセッション環境変数を取得
-    session_b64 = (
-        os.environ.get("RAKUTEN_BLOG_SESSION_B64") or 
-        os.environ.get("ROOM_SESSION_B64") or 
-        os.environ.get("HATENA_SESSION_B64")
-    )
-
-    # 1. 検索キーワード選定（直近ジャンルを自動除外して確実にバラケさせる）
-    attempted_cats = []
+def post_single_article(rakuten_app_id: str, rakuten_access_key: str, rakuten_affiliate_id: str, rakuten_blog_id: str, session_b64: str, article_gen: ArticleGenerator, blog_api: RakutenBlogAPI, posted_cache: set, attempted_cats: list) -> bool:
+    """
+    1記事を検索・生成・投稿（または下書き保存）するコア処理関数。
+    """
     selected_cat, keyword = generate_diverse_keyword(excluded_categories=attempted_cats)
     attempted_cats.append(selected_cat)
+    if len(attempted_cats) >= len(EXPANDED_CATEGORIES):
+        attempted_cats.clear()
 
-    # 2. キャッシュの読み込み
-    posted_cache = load_cache()
-    print(f"Loaded {len(posted_cache)} posted items from cache.")
-
-    # 3. 楽天市場から商品を検索し、未投稿かつNGでない商品を確実に探す（最大100回リトライで絶対止めない）
+    # 楽天市場から商品を検索
     target_item = None
-    max_attempts = 100
-    for attempt in range(max_attempts):
+    for attempt in range(15):
         if attempt > 0:
             time.sleep(1)
-            # リトライ時は未投稿商品が見つからなかったカテゴリーを一旦除外し、別ジャンルから即座に選定
             selected_cat, keyword = generate_diverse_keyword(excluded_categories=attempted_cats)
             attempted_cats.append(selected_cat)
             if len(attempted_cats) >= len(EXPANDED_CATEGORIES):
                 attempted_cats.clear()
         
-        print(f"Attempt {attempt + 1}/{max_attempts}: Searching in [{CATEGORY_NAMES.get(selected_cat, selected_cat)}] with keyword '{keyword}'...")
         items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, keyword)
         if items:
             for item in items:
                 code = item["itemCode"]
                 title = item.get("title", "")
                 caption = item.get("itemCaption", "")
-                
-                # 重複チェック & NG商品チェック
                 if code not in posted_cache and not is_forbidden_item(title, caption):
                     target_item = item
                     break
         if target_item:
             break
-        print(f"No suitable unposted items found for '{keyword}'. Switching to another diverse genre...")
 
     if not target_item:
-        # 万が一見つからなかった場合の緊急フォールバック（8大ジャンルから1つずつ分散試行）
         print("Warning: Standard search limit reached. Executing emergency diverse fall-through search...")
         fallback_kws = [
             ("kitchen_cooking", "電気ケトル 温度調節 保温"),
@@ -659,34 +626,26 @@ def main():
 
     if not target_item:
         print("Error: Could not retrieve target item from API.")
-        sys.exit(1)
+        return False
 
     print(f"Target Item: {target_item['title']} (Code: {target_item['itemCode']})")
 
-    # アフィリエイトIDをURL内に強制適用して確実にする
+    # アフィリエイトURL適用
     affiliate_url = target_item["affiliateUrl"]
     if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
-        # hb.afl.rakuten.co.jp/hgc/xxxx/ の xxxx 部分をご自身のIDに差し替える
         prefix = "hb.afl.rakuten.co.jp/hgc/"
         if prefix in affiliate_url:
             parts = affiliate_url.split(prefix)
             subparts = parts[1].split("/", 1)
             if len(subparts) == 2:
                 affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
-                print(f"Surgically applied your Affiliate ID: {rakuten_affiliate_id}")
 
-    # 5. LLMで超高品質なフル構成レビュー記事（HTML形式）を生成
-    # 画像は多すぎて見づらくならないよう、厳選2〜3枚に設定
-    print("Extracting high-resolution product images (2-3 images)...")
+    # 画像抽出
     highres_images = extract_rakuten_highres_images(target_item, max_images=3)
 
-    print("Generating High-Quality Full Review Article...")
-    article_gen = ArticleGenerator()
-    article_gen.load_model()
-    
+    # 記事・タイトル生成
     title_raw = target_item["title"]
     clean_title = article_gen.get_clean_product_name(title_raw, keyword)
-    
     generator_input_item = {
         "title": target_item["title"],
         "clean_title": clean_title,
@@ -700,32 +659,32 @@ def main():
         image_urls=highres_images,
         affiliate_url=affiliate_url
     )
-
-    # APIの連続呼び出し（429エラー）を回避するため少し待機
-    time.sleep(3)
-    
-    # 記事タイトル（CTR重視の魅力的なタイトルを生成）
-    print("Generating Blog Title...")
+    time.sleep(2)
     blog_title = article_gen.generate_blog_title(generator_input_item)
     print(f"Generated Title: {blog_title}")
 
-    # 6. 楽天ブログへ投稿（1日23件上限チェック）
-    post_mode = os.environ.get("POST_MODE", "draft").strip().lower()
+    # 1日23件上限チェック ＆ 下書き50件上限判定
     today_posts = get_today_post_count()
     print(f"Daily Post Check: {today_posts}/{DAILY_MAX_PUBLIC_POSTS} posts made today ({get_today_jst_str()} JST).")
 
-    # 本日23件以上投稿済みの場合は、必ず下書き保存（draft）モードに強制制限
-    if today_posts >= DAILY_MAX_PUBLIC_POSTS:
-        print(f"⚠️ 1日の公開上限数（{DAILY_MAX_PUBLIC_POSTS}件）に到達しています。下書き保存（draft）モードで安全に保存します。")
-        post_mode = "draft"
-        allow_publish_fallback = False
-    else:
+    if today_posts < DAILY_MAX_PUBLIC_POSTS:
+        post_mode = "publish"
         allow_publish_fallback = True
+        print(f"Daily post slot available ({today_posts+1}/{DAILY_MAX_PUBLIC_POSTS}). Mode: 【公開 (Publish)】")
+    else:
+        print(f"⚠️ 本日の公開上限（{DAILY_MAX_PUBLIC_POSTS}件）に到達済みです。下書き枠を確認します...")
+        draft_count = blog_api.get_draft_count()
+        if draft_count >= 50:
+            print(f"🚫 下書き件数が{draft_count}件（上限50件以上）に達しているため、本日の追加処理を終了します。")
+            return "DRAFT_LIMIT_REACHED"
+        else:
+            print(f"📝 下書き件数: {draft_count}/50件（50件未満のため、下書き保存モードで追加します）。")
+            post_mode = "draft"
+            allow_publish_fallback = False
 
     print(f"Posting to Rakuten Blog (Target Mode: {post_mode}, Allow Fallback: {allow_publish_fallback})...")
     cat_label = CATEGORY_NAMES.get(selected_cat, "暮らし・インテリア")
     theme_genre_id = CATEGORY_THEME_GENRES.get(selected_cat, "600")
-    blog_api = RakutenBlogAPI(blog_id=rakuten_blog_id, session_b64=session_b64)
     success = blog_api.post_entry(
         title=blog_title,
         html_content=article_content,
@@ -738,7 +697,6 @@ def main():
 
     if success:
         print("Successfully posted/saved to Rakuten Blog!")
-        # 実際に公開された場合、または公開モードでの成功時にカウントをインクリメント
         if blog_api.last_post_type == "publish":
             new_count = increment_today_post_count()
             print(f"📈 Total public posts today updated to: {new_count}/{DAILY_MAX_PUBLIC_POSTS}")
@@ -746,12 +704,88 @@ def main():
             print(f"📝 Article safely saved as draft (Total public posts today remains: {get_today_post_count()})")
 
         save_cache(target_item["itemCode"])
+        posted_cache.add(target_item["itemCode"])
         save_json_history(RECENT_CATEGORIES_FILE, selected_cat, max_items=5)
         save_json_history(RECENT_KEYWORDS_FILE, keyword, max_items=25)
         print(f"Updated genre rotation history: logged [{CATEGORY_NAMES.get(selected_cat, selected_cat)}]")
+        return True
     else:
         print("Failed to post entry to Rakuten Blog.")
-        sys.exit(1)
+        return False
+
+def main():
+    print("=== Starting Rakuten Interior/Goods Blog & Room Poster ===")
+    
+    # ローカルの .env ファイルがあれば読み込む
+    if os.path.exists(".env"):
+        print("Loading environment variables from .env file...")
+        with open(".env", "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    os.environ[key.strip()] = val.strip().strip('"').strip("'")
+    
+    rakuten_app_id = os.environ.get("RAKUTEN_APP_ID", "DUMMY_APP_ID")
+    rakuten_access_key = os.environ.get("RAKUTEN_ACCESS_KEY", "")
+    rakuten_affiliate_id = os.environ.get("RAKUTEN_AFFILIATE_ID", "DUMMY_AFFILIATE_ID")
+    rakuten_blog_id = os.environ.get("RAKUTEN_BLOG_ID", "")
+    
+    session_b64 = (
+        os.environ.get("RAKUTEN_BLOG_SESSION_B64") or 
+        os.environ.get("ROOM_SESSION_B64") or 
+        os.environ.get("HATENA_SESSION_B64")
+    )
+
+    posted_cache = load_cache()
+    print(f"Loaded {len(posted_cache)} posted items from cache.")
+
+    article_gen = ArticleGenerator()
+    article_gen.load_model()
+    blog_api = RakutenBlogAPI(blog_id=rakuten_blog_id, session_b64=session_b64)
+
+    # 日本時間（JST）の現在時刻を取得
+    from datetime import datetime, timezone, timedelta
+    jst = timezone(timedelta(hours=9))
+    now_jst = datetime.now(jst)
+    print(f"Current JST Time: {now_jst.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    today_posts = get_today_post_count()
+
+    # 毎日0時台で今日の投稿がまだ0件の場合（あるいは0時ちょうど）は確実に2本アップ
+    if now_jst.hour == 0 and today_posts == 0:
+        target_articles_in_run = 2
+        print(f" Midnight 00:00 JST schedule detected! Posting {target_articles_in_run} articles consecutively.")
+    else:
+        target_articles_in_run = 1
+
+    attempted_cats = []
+    for art_idx in range(1, target_articles_in_run + 1):
+        if target_articles_in_run > 1:
+            print(f"\n--- Running Article {art_idx}/{target_articles_in_run} for this session ---")
+
+        res = post_single_article(
+            rakuten_app_id=rakuten_app_id,
+            rakuten_access_key=rakuten_access_key,
+            rakuten_affiliate_id=rakuten_affiliate_id,
+            rakuten_blog_id=rakuten_blog_id,
+            session_b64=session_b64,
+            article_gen=article_gen,
+            blog_api=blog_api,
+            posted_cache=posted_cache,
+            attempted_cats=attempted_cats
+        )
+
+        if res == "DRAFT_LIMIT_REACHED":
+            print("Draft limit reached (>=50). Exiting gracefully.")
+            break
+        elif not res and art_idx == 1:
+            sys.exit(1)
+
+        if art_idx < target_articles_in_run:
+            wait_sec = random.randint(15, 25)
+            print(f"Waiting {wait_sec} seconds before next post in midnight run...")
+            time.sleep(wait_sec)
 
     print("=== Auto Post Process Completed! ===")
 
