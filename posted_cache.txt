@@ -2369,3 +2369,4 @@ f464821-higashikushira:10000477
 tokyo-beam:10000036
 netkagu-banban:10020064
 relaxsy:10000302
+lifecorner:10002174
