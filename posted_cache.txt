@@ -2370,3 +2370,4 @@ tokyo-beam:10000036
 netkagu-banban:10020064
 relaxsy:10000302
 lifecorner:10002174
+kamachu:10002513
