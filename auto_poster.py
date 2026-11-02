@@ -22,6 +22,8 @@ from rakuten_blog_api import RakutenBlogAPI
 CACHE_FILE = "posted_cache.txt"
 RECENT_CATEGORIES_FILE = "recent_categories.json"
 RECENT_KEYWORDS_FILE = "recent_keywords.json"
+DAILY_POSTS_FILE = "daily_posts.json"
+DAILY_MAX_PUBLIC_POSTS = 23
 
 # 8大カテゴリーの超厳選キーワード辞書（レパートリーの大幅拡大＆多様化）
 EXPANDED_CATEGORIES = {
@@ -177,6 +179,51 @@ def save_json_history(filepath: str, item: str, max_items: int = 5):
             json.dump(history, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"Notice: Failed to save history to {filepath}: {e}")
+
+def get_today_jst_str() -> str:
+    """日本標準時（JST, UTC+9）の現在日付（YYYY-MM-DD）を取得する"""
+    from datetime import datetime, timezone, timedelta
+    jst = timezone(timedelta(hours=9))
+    return datetime.now(jst).strftime("%Y-%m-%d")
+
+def get_today_post_count() -> int:
+    """
+    本日の公開投稿数を取得する。
+    1. daily_posts.json から本日の記録を取得
+    2. なければ、git log から本日の投稿更新コミット数を計測して初期化
+    """
+    today_str = get_today_jst_str()
+    if os.path.exists(DAILY_POSTS_FILE):
+        try:
+            with open(DAILY_POSTS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict) and data.get("date") == today_str:
+                    return int(data.get("count", 0))
+        except Exception as e:
+            print(f"Notice: Could not read {DAILY_POSTS_FILE}: {e}")
+
+    # git log から本日のコミット数を自動取得（フォールバック）
+    try:
+        import subprocess
+        cmd = f'git log --since="{today_str} 00:00:00 +0900" --oneline'
+        res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        commits = [c for c in res.stdout.strip().split("\n") if c.strip()]
+        count = len(commits)
+        print(f"Detected {count} commits for today ({today_str} JST) via git log.")
+        return count
+    except Exception:
+        return 0
+
+def increment_today_post_count() -> int:
+    """本日の公開投稿数を1増やして保存する"""
+    today_str = get_today_jst_str()
+    count = get_today_post_count() + 1
+    try:
+        with open(DAILY_POSTS_FILE, "w", encoding="utf-8") as f:
+            json.dump({"date": today_str, "count": count}, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Notice: Failed to save {DAILY_POSTS_FILE}: {e}")
+    return count
 
 def generate_diverse_keyword(excluded_categories: list = None) -> tuple:
     """
@@ -662,9 +709,20 @@ def main():
     blog_title = article_gen.generate_blog_title(generator_input_item)
     print(f"Generated Title: {blog_title}")
 
-    # 6. 楽天ブログへ投稿
-    print("Posting to Rakuten Blog...")
+    # 6. 楽天ブログへ投稿（1日23件上限チェック）
     post_mode = os.environ.get("POST_MODE", "draft").strip().lower()
+    today_posts = get_today_post_count()
+    print(f"Daily Post Check: {today_posts}/{DAILY_MAX_PUBLIC_POSTS} posts made today ({get_today_jst_str()} JST).")
+
+    # 本日23件以上投稿済みの場合は、必ず下書き保存（draft）モードに強制制限
+    if today_posts >= DAILY_MAX_PUBLIC_POSTS:
+        print(f"⚠️ 1日の公開上限数（{DAILY_MAX_PUBLIC_POSTS}件）に到達しています。下書き保存（draft）モードで安全に保存します。")
+        post_mode = "draft"
+        allow_publish_fallback = False
+    else:
+        allow_publish_fallback = True
+
+    print(f"Posting to Rakuten Blog (Target Mode: {post_mode}, Allow Fallback: {allow_publish_fallback})...")
     cat_label = CATEGORY_NAMES.get(selected_cat, "暮らし・インテリア")
     theme_genre_id = CATEGORY_THEME_GENRES.get(selected_cat, "600")
     blog_api = RakutenBlogAPI(blog_id=rakuten_blog_id, session_b64=session_b64)
@@ -674,11 +732,19 @@ def main():
         post_mode=post_mode,
         category_name=cat_label,
         theme_keyword=keyword,
-        genre_id=theme_genre_id
+        genre_id=theme_genre_id,
+        allow_publish_fallback=allow_publish_fallback
     )
 
     if success:
-        print("Successfully posted to Rakuten Blog!")
+        print("Successfully posted/saved to Rakuten Blog!")
+        # 実際に公開された場合、または公開モードでの成功時にカウントをインクリメント
+        if blog_api.last_post_type == "publish":
+            new_count = increment_today_post_count()
+            print(f"📈 Total public posts today updated to: {new_count}/{DAILY_MAX_PUBLIC_POSTS}")
+        else:
+            print(f"📝 Article safely saved as draft (Total public posts today remains: {get_today_post_count()})")
+
         save_cache(target_item["itemCode"])
         save_json_history(RECENT_CATEGORIES_FILE, selected_cat, max_items=5)
         save_json_history(RECENT_KEYWORDS_FILE, keyword, max_items=25)

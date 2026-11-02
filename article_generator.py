@@ -627,9 +627,10 @@ class ArticleGenerator:
         return clean_res[:40]
 
     def get_clean_product_name(self, title: str, search_keyword: str) -> str:
-        """楽天市場のノイズが多い商品名から、具体的でシンプルな商品名（15文字以内）を抽出する。"""
+        """楽天市場のノイズが多い商品名から、具体的でシンプルな商品名（名詞のみ・15文字以内）を抽出する。"""
         system_prompt = "あなたは入力されたテキストから無駄な修飾語を取り除き、商品名そのもの（名詞）のみを抽出する優秀なアシスタントです。解説は一切含めず、商品名のみを1行で出力してください。"
-        prompt = f"""以下の楽天市場の商品名から、送料無料、サイズ、型番、アピール用の形容詞（おしゃれ、大人気など）をすべて排除し、その商品が「何であるか」を示す具体的でクリーンな商品名（例：『木枠ウォールミラー』『珪藻土バスマット』『分別ゴミ箱』など）を日本語で15文字以内で抽出してください。
+        prompt = f"""以下の楽天市場の商品名から、送料無料、サイズ、型番、アピール用の形容詞（おしゃれ、大人気など）、機能名（静音、USB、急速充電、省エネなど）をすべて排除し、その商品が「何であるか」を示す具体的でクリーンな商品名（例：『木枠ウォールミラー』『珪藻土バスマット』『分別ゴミ箱』『ノートPC冷却ファン』『ケーブルボックス』など）を日本語で15文字以内で抽出してください。
+末尾が不自然に途切れたり（例:「〜 静音 U」などの途切れ）、不要な修飾語が残らないように、自然な名詞のみを抽出してください。
 余計な解説や括弧、引用符、Markdown等は一切含めず、抽出した商品名テキストのみを出力してください。
 
 【楽天市場の商品名】: {title}
@@ -644,9 +645,20 @@ class ArticleGenerator:
         first_line = lines[0] if lines else ""
         cleaned = re.sub(r'<[^>]+>|[\"\'「」『』【】\n\r*`]', '', first_line).strip()
         cleaned = re.sub(r'^(商品名[:：]|クリーン商品名[:：]|抽出結果[:：])\s*', '', cleaned)
+        
+        # 末尾の不自然な途切れ文字（孤立した英数字や記号）を除去（例: "ノートPC冷却ファン 静音 U" -> "ノートPC冷却ファン 静音"）
+        cleaned = re.sub(r'[\s　]+[A-Za-z0-9]$', '', cleaned).strip()
+        # 末尾に残った不要な機能名・修飾語を除去
+        cleaned = re.sub(r'[\s　]+(静音|小型|軽量|急速|省エネ|大容量|北欧|おしゃれ|人気|おすすめ|用|式)$', '', cleaned).strip()
+        # 再度末尾の孤立英字をチェック
+        cleaned = re.sub(r'[\s　]+[A-Za-z0-9]$', '', cleaned).strip()
+
         if cleaned and 2 <= len(cleaned) <= 20:
             return cleaned[:18]
-        return search_keyword[:15] if search_keyword else title[:15]
+
+        # フォールバック時もキーワードから修飾語をカット
+        kw_clean = re.sub(r'[\s　]+(静音|小型|軽量|急速|省エネ|大容量|北欧|おしゃれ|人気|おすすめ|用|式|[A-Za-z0-9])$', '', search_keyword).strip()
+        return kw_clean[:15] if kw_clean else search_keyword[:15]
 
     def _translate_error_message(self, name: str, status_code: int, response_text: str) -> str:
         """APIのエラーレスポンスを分かりやすい日本語に翻訳・解説する"""

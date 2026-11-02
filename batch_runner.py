@@ -11,8 +11,10 @@ from auto_poster import (
     load_cache, save_cache, load_json_history, save_json_history,
     generate_diverse_keyword, fetch_rakuten_items,
     is_forbidden_item, extract_rakuten_highres_images,
+    get_today_post_count, increment_today_post_count, get_today_jst_str,
     CACHE_FILE, RECENT_CATEGORIES_FILE, RECENT_KEYWORDS_FILE,
-    EXPANDED_CATEGORIES, CATEGORY_NAMES, CATEGORY_THEME_GENRES
+    EXPANDED_CATEGORIES, CATEGORY_NAMES, CATEGORY_THEME_GENRES,
+    DAILY_MAX_PUBLIC_POSTS
 )
 from article_generator import ArticleGenerator
 from rakuten_blog_api import RakutenBlogAPI
@@ -159,19 +161,36 @@ def run_batch():
 
         # 楽天ブログへの投稿
         try:
+            today_posts = get_today_post_count()
+            print(f"Daily Post Check: {today_posts}/{DAILY_MAX_PUBLIC_POSTS} posts made today ({get_today_jst_str()} JST).")
+
+            effective_mode = post_mode
+            if today_posts >= DAILY_MAX_PUBLIC_POSTS:
+                print(f"⚠️ 1日の公開上限数（{DAILY_MAX_PUBLIC_POSTS}件）に到達しています。下書き保存（draft）モードで安全に保存します。")
+                effective_mode = "draft"
+                allow_publish_fallback = False
+            else:
+                allow_publish_fallback = True
+
             cat_label = CATEGORY_NAMES.get(selected_cat, "暮らし・インテリア")
             theme_genre_id = CATEGORY_THEME_GENRES.get(selected_cat, "600")
             success = blog_api.post_entry(
                 title=blog_title,
                 html_content=article_html,
-                post_mode=post_mode,
+                post_mode=effective_mode,
                 category_name=cat_label,
                 theme_keyword=keyword,
-                genre_id=theme_genre_id
+                genre_id=theme_genre_id,
+                allow_publish_fallback=allow_publish_fallback
             )
             if success:
                 print(f"✅ Article {i} saved/posted successfully!")
                 success_count += 1
+                if blog_api.last_post_type == "publish":
+                    new_count = increment_today_post_count()
+                    print(f"📈 Total public posts today updated to: {new_count}/{DAILY_MAX_PUBLIC_POSTS}")
+                else:
+                    print(f"📝 Article safely saved as draft (Total public posts today remains: {get_today_post_count()})")
                 
                 # キャッシュと履歴更新
                 item_code = target_item["itemCode"]
