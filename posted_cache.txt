@@ -2383,3 +2383,4 @@ ymworld:10018043
 f272132-izumisano:10009706
 auc-risecreation:10004620
 mixshop2:10000117
+classort:10001458
