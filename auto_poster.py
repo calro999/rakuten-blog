@@ -190,7 +190,7 @@ def get_today_post_count() -> int:
     """
     本日の公開投稿数を取得する。
     1. daily_posts.json から本日の記録を取得
-    2. なければ、git log から本日の投稿更新コミット数を計測して初期化
+    2. daily_posts.json の日付が過去、または存在しない場合は本日は 0 件からスタート
     """
     today_str = get_today_jst_str()
     if os.path.exists(DAILY_POSTS_FILE):
@@ -199,20 +199,11 @@ def get_today_post_count() -> int:
                 data = json.load(f)
                 if isinstance(data, dict) and data.get("date") == today_str:
                     return int(data.get("count", 0))
+                else:
+                    return 0
         except Exception as e:
             print(f"Notice: Could not read {DAILY_POSTS_FILE}: {e}")
-
-    # git log から本日のコミット数を自動取得（フォールバック）
-    try:
-        import subprocess
-        cmd = f'git log --since="{today_str} 00:00:00 +0900" --oneline'
-        res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        commits = [c for c in res.stdout.strip().split("\n") if c.strip()]
-        count = len(commits)
-        print(f"Detected {count} commits for today ({today_str} JST) via git log.")
-        return count
-    except Exception:
-        return 0
+    return 0
 
 def increment_today_post_count() -> int:
     """本日の公開投稿数を1増やして保存する"""
@@ -751,11 +742,12 @@ def main():
     print(f"Current JST Time: {now_jst.strftime('%Y-%m-%d %H:%M:%S')}")
 
     today_posts = get_today_post_count()
+    print(f"Today's posted count: {today_posts}/{DAILY_MAX_PUBLIC_POSTS}")
 
-    # 毎日0時台で今日の投稿がまだ0件の場合（あるいは0時ちょうど）は確実に2本アップ
-    if now_jst.hour == 0 and today_posts == 0:
-        target_articles_in_run = 2
-        print(f" Midnight 00:00 JST schedule detected! Posting {target_articles_in_run} articles consecutively.")
+    # 毎日0時台で今日の投稿が2本未満の場合は、確実に2本に達するまで連続投稿
+    if now_jst.hour == 0 and today_posts < 2:
+        target_articles_in_run = 2 - today_posts
+        print(f" Midnight 00:00 JST schedule detected! Posting {target_articles_in_run} article(s) to reach 2 posts in hour 0.")
     else:
         target_articles_in_run = 1
 
