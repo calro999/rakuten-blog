@@ -2401,3 +2401,4 @@ rakuten24:11186894
 teletwo:10000191
 curtains2018:10005138
 kawaguchiasahishouten:10000047
+bimajyo:10000146
