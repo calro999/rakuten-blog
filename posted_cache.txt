@@ -2402,3 +2402,4 @@ teletwo:10000191
 curtains2018:10005138
 kawaguchiasahishouten:10000047
 bimajyo:10000146
+kadenrand:10023122
