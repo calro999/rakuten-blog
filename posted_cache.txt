@@ -2404,3 +2404,4 @@ kawaguchiasahishouten:10000047
 bimajyo:10000146
 kadenrand:10023122
 manmos-house:10000108
+citacita-shop:10000043
