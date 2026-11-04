@@ -2440,3 +2440,4 @@ e-kit:10042872
 kouseisyouten:10001776
 arne-style:10094255
 tribow123:10000052
+kurodori:10000010
