@@ -2424,3 +2424,4 @@ goodlifeshopstore:10301853
 zakkastore:10028209
 hagimonoya:10000837
 b-interior:10000766
+f336637-kumenan:10000060
