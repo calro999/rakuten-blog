@@ -2420,3 +2420,4 @@ kiitos-web:10029374
 enetroom:10159212
 waiwaiplaza:10014002
 irisplaza-r:10104000
+goodlifeshopstore:10301853
