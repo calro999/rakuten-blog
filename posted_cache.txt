@@ -2465,3 +2465,4 @@ mercato-shop:10003105
 agogonus:10402232
 ipow:10000296
 sleepybed:10002229
+switchbot:10000076
