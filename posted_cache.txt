@@ -2493,3 +2493,4 @@ your-sales-shop:10031270
 hidamari-shop1:10000698
 tescom-japan:10000036
 laduree:10000153
+mu-ra:10001926
