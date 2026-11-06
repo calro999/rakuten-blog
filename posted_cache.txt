@@ -2488,3 +2488,5 @@ f404217-keisen:10000667
 premium-interior:10004487
 comodocasa:10002847
 siroca:10000003
+augur-store:10013651
+your-sales-shop:10031270
