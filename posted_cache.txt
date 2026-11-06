@@ -2491,3 +2491,4 @@ siroca:10000003
 augur-store:10013651
 your-sales-shop:10031270
 hidamari-shop1:10000698
+tescom-japan:10000036
