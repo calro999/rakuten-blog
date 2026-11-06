@@ -2483,3 +2483,4 @@ gekiyasu-kagu:10003345
 hoshinoweb:10002980
 hg-store:10000214
 yamayuu:10021018
+bestboard:10000763
