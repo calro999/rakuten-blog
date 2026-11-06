@@ -2495,3 +2495,4 @@ tescom-japan:10000036
 laduree:10000153
 mu-ra:10001926
 arne-style:10087463
+mixshop2:10000118
