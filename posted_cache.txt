@@ -2524,3 +2524,4 @@ innocrie:10000060
 azusa:10000140
 tansu:10057450
 e-kitchenstyle:10000946
+japan-star:10000008
