@@ -2526,3 +2526,4 @@ tansu:10057450
 e-kitchenstyle:10000946
 japan-star:10000008
 favoritestyle:10004740
+switchbot:10000273
