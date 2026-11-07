@@ -2528,3 +2528,4 @@ japan-star:10000008
 favoritestyle:10004740
 switchbot:10000273
 syo-ei:11026519
+vidas-web:10000089
