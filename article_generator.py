@@ -550,7 +550,7 @@ class ArticleGenerator:
         # CTAボタンのスタイル定義（上下の余白をスッキリ1行分に調整した上品な中央配置ボタンデザイン）
         cta_btn = (
             f'<div style="text-align: center; margin: 14px 0;">'
-            f'<a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 85%; max-width: 320px; padding: 13px 0; background-color: #f4f2ee; color: #333333; border: 1px solid #e0ded9; border-radius: 20px; font-size: 14px; font-weight: bold; text-align: center; text-decoration: none;"><span style="text-decoration: none;">楽天市場で見る</span></a>'
+            f'<a href="{affiliate_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; width: 85%; max-width: 320px; padding: 13px 0; background-color: #ff6f00; color: #ffffff; border: 1px solid #ff6f00; border-radius: 20px; font-size: 14px; font-weight: bold; text-align: center; text-decoration: none;"><span style="text-decoration: none;">楽天市場で見る</span></a>'
             f'</div>'
         )
 
