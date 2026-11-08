@@ -2551,3 +2551,4 @@ sk-shops2024:10001917
 nissin-lux:10001323
 f272132-izumisano:10009715
 gossipstar:10012057
+sanwadirect:10104468
