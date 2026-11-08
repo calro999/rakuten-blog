@@ -2547,3 +2547,5 @@ animestore:10000898
 cocoterior:10010051
 eco-sethubi-inc:10000016
 happyminamoto:10000235
+sk-shops2024:10001917
+nissin-lux:10001323
