@@ -2565,3 +2565,4 @@ maveek:10000026
 milink-inc:10000280
 coconial:10006743
 f462012-kagoshima:10001628
+kinakostore:10005926
