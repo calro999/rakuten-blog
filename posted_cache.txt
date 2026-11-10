@@ -2593,3 +2593,4 @@ f012238-nemuro:10007582
 pica-holic:10007233
 e-kurashi:10037463
 setmarket:10001930
+switchbot:10000265
