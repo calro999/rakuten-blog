@@ -2588,3 +2588,4 @@ mantubiz:10018893
 ease-space:10011933
 exception5251:10000400
 bellevie-harima:10154134
+kyoto-fukunaga:10000240
