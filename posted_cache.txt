@@ -2602,3 +2602,4 @@ faset:10001301
 eleking:10036099
 kagu-world:10054839
 xyl-shop:10000113
+f464821-higashikushira:10000966
