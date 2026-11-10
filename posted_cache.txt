@@ -2600,3 +2600,4 @@ calico-a1:10000576
 f462209-minamisatsuma:10005862
 faset:10001301
 eleking:10036099
+kagu-world:10054839
