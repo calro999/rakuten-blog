@@ -2590,3 +2590,4 @@ exception5251:10000400
 bellevie-harima:10154134
 kyoto-fukunaga:10000240
 f012238-nemuro:10007582
+pica-holic:10007233
