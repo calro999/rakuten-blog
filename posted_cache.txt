@@ -2610,3 +2610,4 @@ sanesufitting:10001573
 r-food:10000653
 sevenlife-hoshioka:10000684
 comwap:10004647
+fukuroyuri:10000240
