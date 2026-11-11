@@ -2613,3 +2613,4 @@ comwap:10004647
 fukuroyuri:10000240
 ryohinseikatsukan:10000105
 ymworld:10012157
+soleine:10009852
