@@ -2611,3 +2611,4 @@ r-food:10000653
 sevenlife-hoshioka:10000684
 comwap:10004647
 fukuroyuri:10000240
+ryohinseikatsukan:10000105
