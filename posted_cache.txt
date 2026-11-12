@@ -2641,3 +2641,4 @@ noco-m:10005837
 stravel:10008086
 lifeideakan:10000169
 auc-risecreation:10004820
+juntakushop:10000045
