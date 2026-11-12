@@ -2628,3 +2628,4 @@ sleepdays:10000089
 tiger-online:10001549
 kavano:10000007
 rbm-shop:10004816
+kaguzaku:10002434
