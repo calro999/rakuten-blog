@@ -2631,3 +2631,4 @@ rbm-shop:10004816
 kaguzaku:10002434
 komarei-style:10009223
 singlelife:10023170
+cado-shop:10000070
