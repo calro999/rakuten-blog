@@ -2676,3 +2676,4 @@ woodwayfurniture:10001223
 nissin-llc:10000011
 rack-kan:10107339
 f014699-bifuka:10000525
+iandu-shop:10000007
