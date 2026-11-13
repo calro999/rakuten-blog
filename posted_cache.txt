@@ -2665,3 +2665,5 @@ ceroinfinity:10069241
 auc-awatsu:10018151
 bridge77:10003527
 hanko-otobe:10005638
+ginga-kojo:10000089
+linsl:10000944
