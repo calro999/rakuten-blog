@@ -2679,3 +2679,4 @@ f014699-bifuka:10000525
 iandu-shop:10000007
 luminousjapan:10000037
 sozo-1:10002230
+berykoko:10000754
