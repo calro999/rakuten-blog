@@ -2681,3 +2681,4 @@ luminousjapan:10000037
 sozo-1:10002230
 berykoko:10000754
 ufit-shop:10000031
+partsshop4u:10075076
