@@ -2688,3 +2688,5 @@ komatsushibata:10000106
 r-kojima:11398483
 freelife:10000007
 e-kurashi:10020977
+odekake:10001743
+cocoanouriba:10014584
