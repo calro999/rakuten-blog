@@ -2694,3 +2694,4 @@ rbm-shop:10004814
 f452025-miyakonojo:10001303
 kaguin:10092065
 irisplaza-r:10156447
+ichikashop:10005098
