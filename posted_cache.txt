@@ -2704,3 +2704,4 @@ kurashikenkou:10216011
 premiumgiftshop:10000166
 tanakastore:10000102
 kaola:10004873
+glv:10074897
