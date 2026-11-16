@@ -2729,3 +2729,4 @@ ksk-shop:10000052
 oskkyoto:10142898
 bathroom:10000448
 chiisana--shiawase:10015026
+sesame-kagu:10000496
