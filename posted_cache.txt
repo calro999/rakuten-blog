@@ -2734,3 +2734,5 @@ f462209-minamisatsuma:10005417
 veryfast:10005328
 kobe-menken:10294074
 la-graine:12206819
+kaguto-plus:10003650
+importgoods-ie:10001937
