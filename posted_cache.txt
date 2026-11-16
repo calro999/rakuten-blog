@@ -2730,3 +2730,4 @@ oskkyoto:10142898
 bathroom:10000448
 chiisana--shiawase:10015026
 sesame-kagu:10000496
+f462209-minamisatsuma:10005417
