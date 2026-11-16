@@ -2727,3 +2727,4 @@ vecelo-japanshop:10000845
 f182079-sabae:10001049
 ksk-shop:10000052
 oskkyoto:10142898
+bathroom:10000448
