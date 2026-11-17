@@ -2756,3 +2756,4 @@ zakkashop2023:10000795
 kaguin:10070933
 takayama-shop:10001047
 kashiwa01:10000048
+ennshopstore:10000072
