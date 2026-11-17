@@ -2752,3 +2752,4 @@ puddinglaboratory:10000019
 f272086-kaizuka:10000725
 u-denki:10012265
 ashop:10003564
+zakkashop2023:10000795
