@@ -2754,3 +2754,4 @@ u-denki:10012265
 ashop:10003564
 zakkashop2023:10000795
 kaguin:10070933
+takayama-shop:10001047
