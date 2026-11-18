@@ -2777,3 +2777,4 @@ f014699-bifuka:10000524
 united-shop01:10842613
 kiitos-seikatsuzakka:10000012
 mjshop-21:10009399
+kagunosato:10010114
