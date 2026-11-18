@@ -2773,3 +2773,4 @@ aooka:10000096
 zzysyouji:10020364
 rack-kan:10099158
 roborockjapandirect:10000141
+f014699-bifuka:10000524
