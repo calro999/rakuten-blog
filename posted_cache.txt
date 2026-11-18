@@ -2775,3 +2775,4 @@ rack-kan:10099158
 roborockjapandirect:10000141
 f014699-bifuka:10000524
 united-shop01:10842613
+kiitos-seikatsuzakka:10000012
