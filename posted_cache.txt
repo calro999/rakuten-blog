@@ -2802,3 +2802,4 @@ babi-furniture:10001994
 airrobo:10000136
 f182079-sabae:10001062
 air-rhizome:10011334
+kasyou-morin:10000291
