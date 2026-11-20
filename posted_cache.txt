@@ -2831,3 +2831,4 @@ gyastal:10008018
 maisondumiel:10000041
 f012238-nemuro:10007542
 belltree:10000387
+ec-ryutu-center:10000507
