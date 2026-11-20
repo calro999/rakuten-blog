@@ -1,7 +1,7 @@
 [
-  "furniture_storage",
-  "lighting_decor",
   "appliances_cleaning",
   "desk_gadget",
-  "bath_sleep_relax"
+  "bath_sleep_relax",
+  "furniture_storage",
+  "lighting_decor"
 ]
