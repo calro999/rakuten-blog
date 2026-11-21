@@ -2851,3 +2851,4 @@ gekiyasukaguya:10024800
 sundrygoods:10000101
 arkijoy:10000030
 gs-advan:10012550
+f042056-kesennuma:10002233
