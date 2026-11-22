@@ -2874,3 +2874,4 @@ bjc-shop:10001768
 f202177-saku:10000521
 switchbot:10000116
 auc-riverp:10012728
+hikaritec:10000415
