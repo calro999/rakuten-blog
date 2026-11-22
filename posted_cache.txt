@@ -2869,3 +2869,5 @@ lazata:10000023
 etradevox:10000035
 grandeshop:10001959
 fujita-cooking:10023313
+hobbytoy:10145155
+bjc-shop:10001768
