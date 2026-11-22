@@ -2876,3 +2876,4 @@ switchbot:10000116
 auc-riverp:10012728
 hikaritec:10000415
 km-service:10194606
+kakushow:10000118
