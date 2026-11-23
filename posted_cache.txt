@@ -2889,3 +2889,4 @@ stan-shop:10000093
 kagu-world:10041215
 luxs-1:10001065
 plywood:10014631
+takayama-shop:10000199
