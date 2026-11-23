@@ -2894,3 +2894,4 @@ kouseisyouten:10001878
 f252131-higashiomi:10001340
 f454052-kawaminami:10001756
 u-denki:10011507
+shopcp:10004740
