@@ -2886,3 +2886,4 @@ ichikashop:10005135
 shop-kapua:10025536
 mireica:10000133
 stan-shop:10000093
+kagu-world:10041215
