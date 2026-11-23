@@ -2883,3 +2883,4 @@ karabo:10080426
 e-kurashi:10020982
 homeystore:10152501
 ichikashop:10005135
+shop-kapua:10025536
