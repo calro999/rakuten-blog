@@ -2900,3 +2900,4 @@ forjoyhome:10000304
 kaiteki-homes:10102227
 easyjoy-shop:10000371
 yasuragimok:10010607
+deoway:10000036
