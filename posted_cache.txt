@@ -2882,3 +2882,4 @@ lifeonproducts:10000737
 karabo:10080426
 e-kurashi:10020982
 homeystore:10152501
+ichikashop:10005135
