@@ -2918,3 +2918,4 @@ kyarahouse:10149135
 roomy:10002219
 f393878-niyodogawa:10000496
 gaoye:10000002
+waplus-shop:10001014
