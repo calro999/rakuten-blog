@@ -2921,3 +2921,4 @@ gaoye:10000002
 waplus-shop:10001014
 morganshop:10020986
 takayama-shop:10001881
+cicidrug:10000259
