@@ -2902,3 +2902,4 @@ easyjoy-shop:10000371
 yasuragimok:10010607
 deoway:10000036
 rocco-shop:10010029
+gs-advan:10010358
