@@ -2924,3 +2924,4 @@ takayama-shop:10001881
 cicidrug:10000259
 kouseisyouten:10001895
 piitikupaatiku:10000413
+interior-palette:10084711
