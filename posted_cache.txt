@@ -2922,3 +2922,4 @@ waplus-shop:10001014
 morganshop:10020986
 takayama-shop:10001881
 cicidrug:10000259
+kouseisyouten:10001895
