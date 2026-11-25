@@ -2946,3 +2946,4 @@ ucstore:10000001
 syokoku-umaimonomeguri:10001488
 goodlifeshop:10001413
 weiwei:10024378
+mixshop2:10000328
