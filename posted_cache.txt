@@ -2942,3 +2942,4 @@ f462187-kirishima:10000990
 ekurashikan:10000013
 askrtech:10000069
 ooble:10000005
+ucstore:10000001
