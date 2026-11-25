@@ -2943,3 +2943,4 @@ ekurashikan:10000013
 askrtech:10000069
 ooble:10000005
 ucstore:10000001
+syokoku-umaimonomeguri:10001488
