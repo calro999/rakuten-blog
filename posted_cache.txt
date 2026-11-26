@@ -2967,3 +2967,4 @@ ryohinseikatsukan:10000111
 prostation:10068706
 beaubelle:10002514
 kanoka-cake:10000136
+u-denki:10028970
