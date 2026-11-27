@@ -2996,3 +2996,8 @@ aestura-japan:10000007
 kajewel:10018585
 129-ink:10000012
 fancl-shop:10000257
+matsucame:10067151
+flaner:10024211
+arandshop:10000127
+iremono:10001165
+futon:10034133
