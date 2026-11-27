@@ -3009,3 +3009,7 @@ enetroom:10166563
 kainomahou:10001308
 apm24:10005532
 omitama:10000037
+kawaguchiasahishouten:10000054
+delishop:10000271
+liberesta:10000108
+mikirona:10000122
