@@ -70,6 +70,9 @@ def run_batch():
         selected_cat = None
         keyword = None
         attempted_cats = []
+        target_item = None
+        comparison_items = []
+        is_comparison_cat = False
 
         # 直近のジャンルを除外しつつ未投稿かつ規約に違反しない商品を探す
         for attempt in range(15):
@@ -77,6 +80,7 @@ def run_batch():
             attempted_cats.append(selected_cat)
             if len(attempted_cats) >= len(EXPANDED_CATEGORIES):
                 attempted_cats.clear()
+            is_comparison_cat = selected_cat in ["heating_appliances", "humidifier", "winter_skincare"]
 
             cat_name = CATEGORY_NAMES.get(selected_cat, selected_cat)
             print(f"Attempt {attempt+1}: Category [{cat_name}], Keyword [{keyword}]")
@@ -87,10 +91,23 @@ def run_batch():
                 title = it.get("title", "")
                 caption = it.get("itemCaption", "")
                 if code and code not in posted_cache and not is_forbidden_item(title, caption):
-                    target_item = it
-                    break
+                    if target_item is None:
+                        target_item = it
+                        if not is_comparison_cat:
+                            break
+                    elif is_comparison_cat and it not in comparison_items:
+                        comparison_items.append(it)
+                        if len(comparison_items) >= 3:
+                            break
             
             if target_item:
+                # おせち重複時はスイーツへ振替
+                if selected_cat == "famous_osechi" and target_item["itemCode"] in posted_cache:
+                    selected_cat = "winter_sweets"
+                    keyword = random.choice(EXPANDED_CATEGORIES["winter_sweets"])
+                    target_item = None
+                    comparison_items = []
+                    continue
                 break
             time.sleep(1)
 
@@ -98,14 +115,13 @@ def run_batch():
         if not target_item:
             print("Fallback to diverse search...")
             fallback_kws = [
-                ("sweets_gift", "バスクチーズケーキ 濃厚 お取り寄せ スイーツ"),
-                ("appliances_cleaning", "サーキュレーター 静音 首振り 節電"),
-                ("bath_sleep_relax", "ホテル仕様 バスタオル 今治タオル 2枚組"),
-                ("kitchen_cooking", "電気ケトル 温度調節 保温"),
-                ("desk_gadget", "木目調 ケーブルボックス 配線隠し"),
-                ("furniture_storage", "北欧 木製 サイドテーブル"),
-                ("lighting_decor", "真鍮 ペンダントライト 北欧"),
-                ("gourmet_furusato", "ふるさと納税 黒毛和牛 ハンバーグ 10個以上")
+                ("heating_appliances", "セラミックファンヒーター 人感センサー 速暖"),
+                ("blanket_fleece", "着る毛布 ルームウェア もこもこ メンズ レディース"),
+                ("winter_sweets", "濃厚 ガトーショコラ 熟成 チョコレートケーキ"),
+                ("bath_relax", "薬用 重炭酸 入浴剤 ギフト 疲労回復"),
+                ("humidifier", "ハイブリッド 加湿器 大容量 上部給水 静音"),
+                ("winter_skincare", "高保湿 ハンドクリーム シアバター ギフト"),
+                ("famous_osechi", "おせち 予約 2026 京都 割烹 料亭")
             ]
             for fb_cat, fb_kw in fallback_kws:
                 items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, fb_kw)
@@ -126,38 +142,67 @@ def run_batch():
 
         print(f"Selected: {target_item['title'][:50]}... ({target_item['itemCode']})")
 
-        # アフィリエイトURLの構築
-        affiliate_url = target_item["affiliateUrl"]
-        if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
-            prefix = "hb.afl.rakuten.co.jp/hgc/"
-            if prefix in affiliate_url:
-                parts = affiliate_url.split(prefix)
-                subparts = parts[1].split("/", 1)
-                if len(subparts) == 2:
-                    affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
+        cat_label = CATEGORY_NAMES.get(selected_cat, "暮らし・インテリア")
+        
+        # 暖房器具・加湿器・乾燥対策コスメで、比較用商品が揃っている場合は4商品比較形式で記事を生成
+        if is_comparison_cat and len(comparison_items) >= 3:
+            all_comp_items = [target_item] + comparison_items[:3]
+            comp_aff_urls = []
+            comp_imgs_list = []
+            for it in all_comp_items:
+                aff = it["affiliateUrl"]
+                if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
+                    prefix = "hb.afl.rakuten.co.jp/hgc/"
+                    if prefix in aff:
+                        parts = aff.split(prefix)
+                        subparts = parts[1].split("/", 1)
+                        if len(subparts) == 2:
+                            aff = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
+                comp_aff_urls.append(aff)
+                comp_imgs_list.append(extract_rakuten_highres_images(it, max_images=1))
+            
+            article_html = article_gen.build_comparison_article(
+                items=all_comp_items,
+                affiliate_urls=comp_aff_urls,
+                image_urls_list=comp_imgs_list,
+                category_label=cat_label
+            )
+            time.sleep(2)
+            blog_title = f"【徹底比較】冬を快適にする人気の{cat_label}おすすめ4選！"
+            print(f"Generated Comparison Title: {blog_title}")
+        else:
+            # アフィリエイトURLの構築
+            affiliate_url = target_item["affiliateUrl"]
+            if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
+                prefix = "hb.afl.rakuten.co.jp/hgc/"
+                if prefix in affiliate_url:
+                    parts = affiliate_url.split(prefix)
+                    subparts = parts[1].split("/", 1)
+                    if len(subparts) == 2:
+                        affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
 
-        # 高画質画像の抽出（多すぎて見づらくならないよう2〜3枚に厳選）
-        highres_images = extract_rakuten_highres_images(target_item, max_images=3)
+            # 高画質画像の抽出（多すぎて見づらくならないよう2〜3枚に厳選）
+            highres_images = extract_rakuten_highres_images(target_item, max_images=3)
 
-        # タイトル・記事本文生成
-        clean_title = article_gen.get_clean_product_name(target_item["title"], keyword)
-        gen_input = {
-            "title": target_item["title"],
-            "clean_title": clean_title,
-            "price": target_item["price"],
-            "caption": target_item["itemCaption"],
-            "search_keyword": keyword
-        }
+            # タイトル・記事本文生成
+            clean_title = article_gen.get_clean_product_name(target_item["title"], keyword)
+            gen_input = {
+                "title": target_item["title"],
+                "clean_title": clean_title,
+                "price": target_item["price"],
+                "caption": target_item["itemCaption"],
+                "search_keyword": keyword
+            }
 
-        article_html = article_gen.build_full_featured_article(
-            item=gen_input,
-            image_urls=highres_images,
-            affiliate_url=affiliate_url
-        )
+            article_html = article_gen.build_full_featured_article(
+                item=gen_input,
+                image_urls=highres_images,
+                affiliate_url=affiliate_url
+            )
 
-        time.sleep(2)
-        blog_title = article_gen.generate_blog_title(gen_input)
-        print(f"Generated Title: {blog_title}")
+            time.sleep(2)
+            blog_title = article_gen.generate_blog_title(gen_input)
+            print(f"Generated Title: {blog_title}")
 
         # 楽天ブログへの投稿
         try:
@@ -196,6 +241,12 @@ def run_batch():
                 item_code = target_item["itemCode"]
                 save_cache(item_code)
                 posted_cache.add(item_code)
+                if is_comparison_cat and comparison_items:
+                    for ci in comparison_items:
+                        c_code = ci.get("itemCode")
+                        if c_code:
+                            save_cache(c_code)
+                            posted_cache.add(c_code)
                 
                 recent_categories = save_json_history(RECENT_CATEGORIES_FILE, selected_cat, max_items=5)
                 recent_keywords = save_json_history(RECENT_KEYWORDS_FILE, keyword, max_items=25)

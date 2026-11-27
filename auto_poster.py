@@ -25,123 +25,97 @@ RECENT_KEYWORDS_FILE = "recent_keywords.json"
 DAILY_POSTS_FILE = "daily_posts.json"
 DAILY_MAX_PUBLIC_POSTS = 23
 
-# 8大カテゴリーの超厳選キーワード辞書（レパートリーの大幅拡大＆多様化）
+# 年末・冬の厳選7大カテゴリー（成約率CVR最大化＆完全比率配分）
+# 1. 暖房家電・暖房器具（20%）: コタツ、ファンヒーター、石油ストーブ、パネルヒーター、電気毛布等
+# 2. ブランケット・着る毛布・毛布（20%）: 着る毛布、極暖毛布、大判ブランケット、発熱マイクロファイバー等
+# 3. 冬のご褒美スイーツ（20%）: 濃厚チョコケーキ、バスクチーズケーキ、極上プリン、シュトーレン等（フルーツ単体NG）
+# 4. 名店・老舗のおせち（10%）: 割烹・名店・料亭監修おせち、ホテルおせち（重複時はスイーツへ自動振替）
+# 5. 温まる入浴剤（10%）: 薬用重炭酸、温泉気分、発泡バスボム、天然クレイ等
+# 6. 加湿器（10%）: ハイブリッド式、大容量超音波、スチーム式、卓上型等
+# 7. 乾燥対策コスメ・ハンド・リップ（10%）: 高保湿ハンドクリーム、リップバーム、シアバター、セラミドクリーム等
 EXPANDED_CATEGORIES = {
-    # 1. 北欧・モダン家具＆大型収納
-    "furniture_storage": [
-        "北欧 木製 サイドテーブル", "北欧風 遮光カーテン", "北欧風 チェスト タンス",
-        "ローテーブル 折りたたみ 北欧", "ハンガーラック スリム 木製", "スツール 木製 北欧",
-        "座椅子 コンパクト 北欧", "キャスター付き ワゴン 北欧", "ウォールシェルフ 賃貸 北欧",
-        "ウッドカーペット ナチュラル", "テレビ台 北欧 ローボード", "ダイニングチェア 北欧 木製",
-        "ネストテーブル 北欧 木製", "マガジンラック 壁掛け 北欧", "シューズラック スリム 北欧",
-        "本棚 スリム 大容量 木製", "ラダーラック 突っ張り 壁面収納", "コレクションケース ガラス 卓上",
-        "パソコンデスク 幅80 北欧", "サイドチェスト キャスター付き 木目", "すのこベッド 折りたたみ シングル",
-        "ドレッサー コンパクト 北欧 鏡台", "コートハンガー ポールスタンド 木製", "オープンラック 3段 木製",
-        "キッチンラック ゴミ箱上 収納", "カウンター下収納 薄型 キャビネット", "ウッドラック 奥行30cm 北欧"
+    # 1. 暖房器具・暖房家電（20%配分）
+    "heating_appliances": [
+        "セラミックファンヒーター 人感センサー 速暖", "デスク下 パネルヒーター 省エネ", "一人用 こたつ テーブル コンパクト",
+        "フラットヒーター こたつ 正方形 北欧", "石油ストーブ レトロ 小型 キャンプ", "カーボンヒーター 首振り 省エネ 速暖",
+        "電気ストーブ 省エネ 静音", "グラファイトヒーター 即暖 アラジン風", "オイルヒーター 省エネ タイマー 静音",
+        "足元ヒーター デスク下 静音 タイマー", "電気ひざ掛け 洗える フランネル", "ホットカーペット 1.5畳 2畳 省エネ",
+        "ガスファンヒーター 省エネ 速暖", "ファンヒーター ガード 安全", "着る こたつ 一人用 足元暖房"
     ],
     
-    # 2. 照明・インテリア雑貨・アート
-    "lighting_decor": [
-        "真鍮 ペンダントライト 北欧", "テーブルランプ 北欧 アンティーク", "LEDデスクライト 木目調",
-        "間接照明 スタンド 北欧", "壁掛け時計 静音 北欧", "時計 デジタル 木目",
-        "シーリングライト 北欧 木枠", "ブラケットライト 北欧 壁掛け", "ペンダントライト ガラス 北欧",
-        "スリム 傘立て 北欧", "玄関マット 天然素材 北欧風", "キーフック 玄関 木製",
-        "木製 ティッシュケース", "真鍮 アクセサリートレイ", "卓上 ミラー 木枠 北欧",
-        "ジュエリーボックス 大容量 木製", "アロマストーン 皿付き", "フェルト 収納バスケット",
-        "リードディフューザー 高級感 木", "キャンドルホルダー ガラス 北欧", "ポスターフレーム 木製 B2",
-        "北欧 アートパネル ウォールデコ", "ブランケット 北欧 大判", "クッションカバー 北欧 リネン",
-        "陶器 フラワーベース 北欧", "木製 ウォールハンガー 壁掛け", "韓国インテリア ウェーブミラー",
-        "韓国インテリア アクリルシェルフ", "韓国風 卓上ライト 球体", "キャンドルウォーマー ランプ"
+    # 2. あったかブランケット・着る毛布・極暖毛布（20%配分）
+    "blanket_fleece": [
+        "着る毛布 ルームウェア もこもこ メンズ レディース", "着る毛布 ロング丈 フード付き 静電気防止",
+        "西川 毛布 シングル 2枚合わせ 吸湿発熱", "極暖 マイクロファイバー 毛布 洗える 厚手",
+        "大判 ブランケット 北欧 フリース ひざ掛け", "ボア ブランケット ふわふわ 暖かい 100 140",
+        "掛け毛布 フランネル 蓄熱 保温 丸洗い", "シンサレート 掛け布団 毛布 ウルトラ 高密度",
+        "発熱 コットン ブランケット 綿100% 洗える", "重い毛布 加重ブランケット 快眠 安眠",
+        "電気ブランケット USB給電 丸洗い アウトドア", "ダウンブランケット 羽毛 洗える ひざ掛け"
     ],
 
-    # 3. キッチン家電・便利調理器具・テーブルウェア
-    "kitchen_cooking": [
-        "ブレッドケース パンケース おしゃれ", "調味料ラック ステンレス マグネット", "珪藻土 水切りマット ドライトレイ",
-        "ウッドプレート 天然木 アカシア", "ガラス キャニスター 保存容器", "セラミック コーヒーミル 手動",
-        "マグカップ 北欧 陶器 ペア", "カトラリーセット 北欧 クチポール風", "キッチンマット 滑り止め 北欧",
-        "電気ケトル 温度調節 保温", "コンパクト ホットプレート 焼肉 たこ焼き", "自動調理鍋 電気圧力鍋 レシピ付き",
-        "ノンフライヤー 大容量 卓上", "ミル付き 全自動 コーヒーメーカー", "スチーム オーブントースター 4枚焼き",
-        "コードレス ハンドブレンダー 離乳食", "ヨーグルトメーカー 飲むヨーグルト 甘酒", "ホットサンドメーカー 電気 耳まで焼ける",
-        "フードプロセッサー きざむ おろす", "真空パック機 フードシーラー", "ホーロー 鍋 キャセロール 蓋付き",
-        "セラミック包丁 3点セット", "真空断熱 タンブラー 保冷 保温 蓋付き", "耐熱ガラス 密閉 保存容器 セット",
-        "オイルポット ステンレス こし網付き", "水切りラック 伸縮 シンク上 ステンレス"
+    # 3. 冬のご褒美スイーツ（20%配分・フルーツ単体完全除外）
+    "winter_sweets": [
+        "濃厚 ガトーショコラ 熟成 チョコレートケーキ", "バスクチーズケーキ 濃厚 お取り寄せ スイーツ",
+        "テリーヌショコラ 濃厚 生チョコ ギフト", "高級 プリン 詰め合わせ 濃厚 なめらか",
+        "とろける生チョコ 専門店 ギフト ボックス", "抹茶バウムクーヘン 宇治抹茶 老舗 ギフト",
+        "シュトーレン ドイツ 伝統菓子 クリスマス", "カヌレ ド ボルドー 6個入り フランス菓子",
+        "フィナンシェ 焦がしバター 個包装 16個", "極上 どら焼き 粒あん 栗 どらやき 詰め合わせ",
+        "和菓子 カステラ 長崎 老舗 個包装", "フォンダンショコラ とろける 温めて美味しい",
+        "フロランタン 焼き菓子 アーモンド 大容量", "レーズンサンド 濃厚バタークリーム 10個入",
+        "ブラウニー 濃厚 ナッツ チョコ 詰め合わせ"
     ],
 
-    # 4. スマート家電・生活家電・空調・掃除
-    "appliances_cleaning": [
-        "ロボット掃除機 水拭き 静音 自動充電", "コードレス掃除機 軽量 パワフル吸引", "サーキュレーター 静音 首振り 節電",
-        "超音波加湿器 大容量 上部給水 木目", "ハイブリッド加湿器 静音 タイマー", "空気清浄機 コンパクト 静音 脱臭",
-        "衣類スチーマー ハンディ スチームアイロン", "布団乾燥機 コンパクト 靴乾燥 アタッチメント", "デスク下 パネルヒーター 省エネ",
-        "セラミックファンヒーター 人感センサー 速暖", "音波振動 電動歯ブラシ 充電式 防水", "マイナスイオン ヘアドライヤー 大風量 速乾",
-        "LEDシーリングライト 調光調色 リモコン付き", "スマートリモコン SwitchBot ハブ", "卓上 加湿器 USB 静音 持ち運び",
-        "コンパクト 除湿機 部屋干し 小型", "アロマディフューザー 超音波 タイマー付き", "毛玉取り器 コードレス 充電式 替刃付き"
+    # 4. 名店・老舗おせち（10%配分）
+    "famous_osechi": [
+        "おせち 予約 2026 京都 割烹 料亭", "おせち 冷凍 老舗 和風 三段重",
+        "名店監修 おせち 3人前 4人前", "銀座 ホテル おせち 和洋折衷 二段重",
+        "金沢 料亭 おせち 伝統 厳選食材", "博多 和洋 おせち 特大 一段重 特生",
+        "赤坂 料亭 おせち 高級食材 鮑 からすみ", "京都 祇園 おせち 三段重 予約"
     ],
 
-    # 5. デスク周り・PC周辺・配線収納ガジェット
-    "desk_gadget": [
-        "木目調 ケーブルボックス 配線隠し", "モニタースタンド 木製 引き出し付き", "ノートパソコンスタンド アルミ 無段階調整",
-        "3in1 ワイヤレス充電器 急速 スマホ 時計", "デスクマット 大型 レザー調 防水 滑り止め", "卓上 電源タップ USB急速充電 クランプ式",
-        "木製 デスクオーガナイザー ペン立て", "デスクライト クランプ 目に優しい 無段階調光", "ケーブルクリップ マグネット 配線整理",
-        "リストレスト 低反発 キーボード マウス", "ガジェットポーチ 大容量 トラベルポーチ 撥水", "折りたたみ式 タブレットスタンド アルミ",
-        "ノートPC冷却ファン 静音 USB給電", "スマートゴミ箱 自動開閉 センサー 分別", "卓上 クリーナー ミニ掃除機 充電式"
+    # 5. 温まる・リラックス入浴剤（10%配分）
+    "bath_relax": [
+        "薬用 重炭酸 入浴剤 ギフト 疲労回復", "エプソムソルト 国産 マグネシウム 入浴剤",
+        "名湯 温泉 入浴剤 にごり湯 詰め合わせ", "アロマ バスミルク 高保湿 保湿入浴剤",
+        "死海の塩 バスソルト 天然精油 リラックス", "生薬 漢方 薬湯 入浴剤 温活 冷え性",
+        "発泡 炭酸ガス 入浴剤 バスボム 詰め合わせ", "クレイ 入浴剤 クレイバス 天然ミネラル"
     ],
 
-    # 6. バス・ランドリー・快眠ヘルスケア
-    "bath_sleep_relax": [
-        "珪藻土バスマット グレー ソフト 丸洗い", "ランドリーバスケット キャスター付き 2段", "ホテル仕様 バスタオル 今治タオル 2枚組",
-        "高反発 まくら 安眠 快眠 肩こり 首こり", "薬用 重炭酸 入浴剤 ギフト 疲労回復", "アロマスプレー ピローミスト 快眠 ラベンダー",
-        "筋膜リリース マッサージガン 軽量 ミニ", "ネックマッサージャー 温熱 首 肩こり 充電式", "アイマッサージャー ホットアイマスク 充電式",
-        "今治 タオルケット シングル 綿100% 日本製", "接触冷感 敷きパッド 丸洗い 吸水速乾", "シルク 枕カバー 絹100% 片面 洗える",
-        "シャワーヘッド 節水 塩素除去 マイクロナノバブル", "ディスペンサー 自動 泡 ソープディスペンサー", "吸水ヘアキャップ マイクロファイバー 速乾"
+    # 6. 加湿器（10%配分）
+    "humidifier": [
+        "ハイブリッド 加湿器 大容量 上部給水 静音", "超音波 加湿器 大容量 卓上 アロマ対応",
+        "スチーム式 加湿器 衛生的 お手入れ簡単", "気化式 加湿器 省エネ 静音 リビング",
+        "卓上 加湿器 USB コードレス 充電式", "タワー型 加湿器 大容量 次亜塩素酸水対応",
+        "加湿器 アロマディフューザー 木目調 LEDライト"
     ],
 
-    # 7. ご褒美スイーツ・和洋菓子・おうちカフェ
-    "sweets_gift": [
-        "バスクチーズケーキ 濃厚 お取り寄せ スイーツ", "濃厚 ガトーショコラ 熟成 チョコレートケーキ",
-        "抹茶バウムクーヘン 宇治抹茶 老舗 ギフト", "高級 プリン 詰め合わせ 濃厚 なめらか",
-        "マカロン ギフト 詰め合わせ 12個入り", "とろける生チョコ 専門店 ギフト ボックス",
-        "和菓子 カステラ 長崎 老舗 個包装", "極上 どら焼き 粒あん 栗 どらやき 詰め合わせ",
-        "北海道 ロールケーキ 純生クリーム ギフト", "フルーツタルト 宝石 冷凍便 ギフト",
-        "カヌレ ド ボルドー 6個入り フランス菓子", "クッキー缶 ギフト 焼き菓子 詰め合わせ",
-        "フィナンシェ 焦がしバター 個包装 16個", "高級 わらび餅 本わらび粉 抹茶 きなこ",
-        "栗きんとん 中津川 老舗 国産栗 100%", "レーズンサンド 濃厚バタークリーム 10個入",
-        "ジェラート 詰め合わせ イタリアン アイス 8個", "とろける シフォンケーキ 生クリーム プレーン",
-        "アップルパイ 焼きたて 直送 青森りんご", "フロランタン 訳あり 焼き菓子 アーモンド 大容量"
-    ],
-
-    # 8. ふるさと納税＆極上お取り寄せグルメ
-    "gourmet_furusato": [
-        "ふるさと納税 黒毛和牛 ハンバーグ 10個以上", "ふるさと納税 国産 うなぎ 蒲焼 2尾以上 秘伝タレ",
-        "ふるさと納税 オホーツク 特大ホタテ 1kg 刺身用", "ふるさと納税 熟成 牛タン 厚切り 焼肉用",
-        "ふるさと納税 厳選 鮭 いくら 醤油漬け 200g以上", "ふるさと納税 博多 本場 もつ鍋 セット 3人前",
-        "ふるさと納税 贅沢 クラフトビール 飲み比べ 詰め合わせ", "ふるさと納税 特選 シャインマスカット 1房以上",
-        "ふるさと納税 プレミアム 白米 つや姫 10kg 新米", "ふるさと納税 宮崎牛 A5 等級 すき焼き しゃぶしゃぶ",
-        "ふるさと納税 本まぐろ 中トロ 刺身用 柵どり", "ふるさと納税 もちもち 餃子 96個 冷凍 国産具材",
-        "専門店の牛すじカレー レトルト 6食 贅沢", "本場 スペイン産 熟成 生ハム ハモンセラーノ 原木切り落とし",
-        "ふるさと納税 ズワイガニ 棒肉 ポーション 殻剥き", "ふるさと納税 鹿児島県産 黒豚 しゃぶしゃぶ 食べ比べ"
+    # 7. 乾燥対策コスメ・ハンド・リップ（10%配分）
+    "winter_skincare": [
+        "高保湿 ハンドクリーム シアバター ギフト", "薬用 リップバーム 高保湿 唇荒れ 乾燥",
+        "セラミド 保湿クリーム フェイスクリーム 乾燥肌", "マルチバーム オーガニック シアバター 全身",
+        "ネイルオイル ペンタイプ 保湿 指先ケア", "濃厚 ナイトリップマスク 唇用 美容液",
+        "馬油 スキンクリーム 無香料 保湿 全身", "ヒアルロン酸 原液 美容液 高保湿 導入液"
     ]
 }
 
 CATEGORY_NAMES = {
-    "furniture_storage": "家具・大型収納",
-    "lighting_decor": "照明・インテリア雑貨",
-    "kitchen_cooking": "キッチン・調理器具",
-    "appliances_cleaning": "生活家電・スマート空調",
-    "desk_gadget": "デスク周り・配線ガジェット",
-    "bath_sleep_relax": "バス・快眠ヘルスケア",
-    "sweets_gift": "ご褒美スイーツ・和洋菓子",
-    "gourmet_furusato": "ふるさと納税・絶品グルメ"
+    "heating_appliances": "暖房器具・暖房家電",
+    "blanket_fleece": "ブランケット・着る毛布",
+    "winter_sweets": "冬のご褒美スイーツ",
+    "famous_osechi": "名店・老舗おせち",
+    "bath_relax": "温まる・リラックス入浴剤",
+    "humidifier": "加湿器・乾燥対策",
+    "winter_skincare": "乾燥対策コスメ・ハンドケア"
 }
 
 CATEGORY_THEME_GENRES = {
-    "furniture_storage": "600",   # 生活・インテリア
-    "lighting_decor": "600",      # 生活・インテリア
-    "kitchen_cooking": "600",     # 生活・インテリア
-    "appliances_cleaning": "200", # パソコン・家電
-    "desk_gadget": "200",         # パソコン・家電
-    "bath_sleep_relax": "710",    # 健康・ダイエット
-    "sweets_gift": "300",         # 料理・食べ物
-    "gourmet_furusato": "300"     # 料理・食べ物
+    "heating_appliances": "200", # パソコン・家電
+    "blanket_fleece": "600",     # 生活・インテリア
+    "winter_sweets": "300",      # 料理・食べ物
+    "famous_osechi": "300",      # 料理・食べ物
+    "bath_relax": "710",         # 健康・ダイエット
+    "humidifier": "200",         # パソコン・家電
+    "winter_skincare": "700"     # 美容・コスメ
 }
 
 # 関連ジャンルID
@@ -216,29 +190,45 @@ def increment_today_post_count() -> int:
         print(f"Notice: Failed to save {DAILY_POSTS_FILE}: {e}")
     return count
 
+# 各カテゴリーの出現確率比率（ユーザー指定）
+# 暖房家電 20%, ブランケット/毛布 20%, 冬スイーツ 20%, おせち 10%, 入浴剤 10%, 加湿器 10%, 乾燥コスメ 10%
+CATEGORY_WEIGHTS = {
+    "heating_appliances": 0.20,
+    "blanket_fleece": 0.20,
+    "winter_sweets": 0.20,
+    "famous_osechi": 0.10,
+    "bath_relax": 0.10,
+    "humidifier": 0.10,
+    "winter_skincare": 0.10
+}
+
 def generate_diverse_keyword(excluded_categories: list = None) -> tuple:
     """
-    直近に投稿されたカテゴリーを完全に除外して、毎回全く異なるジャンルから
-    キーワードを選定する。（同じような商品の連続投稿を論理的に100%防止）
+    指定比率（暖房20%, 毛布20%, スイーツ20%, おせち10%, 入浴剤10%, 加湿器10%, コスメ10%）に基づき、
+    直近のカテゴリー連続を回避しながら最適なジャンルとキーワードを選定する。
     戻り値: (category_id, keyword)
     """
     all_categories = list(EXPANDED_CATEGORIES.keys())
     recent_cats = load_json_history(RECENT_CATEGORIES_FILE)
     
-    # 直近3〜4件のカテゴリーを除外対象とする
-    exclude_set = set(recent_cats[-4:]) if recent_cats else set()
+    # 直近1〜2件のカテゴリーを除外対象とする（完全に同じジャンルが連続しないようにする）
+    exclude_set = set(recent_cats[-2:]) if recent_cats else set()
     if excluded_categories:
         exclude_set.update(excluded_categories)
         
     candidates = [c for c in all_categories if c not in exclude_set]
     if not candidates:
-        # すべて除外された場合は直近1件のみ除外
         last_cat = recent_cats[-1] if recent_cats else ""
         candidates = [c for c in all_categories if c != last_cat]
         if not candidates:
             candidates = all_categories
 
-    selected_cat = random.choice(candidates)
+    # 重み付け確率による選択
+    weights = [CATEGORY_WEIGHTS.get(c, 0.1) for c in candidates]
+    total_w = sum(weights)
+    norm_weights = [w / total_w for w in weights]
+    
+    selected_cat = random.choices(candidates, weights=norm_weights, k=1)[0]
     
     # カテゴリー内のキーワードから、直近使われていないキーワードを優先選択
     recent_kws = load_json_history(RECENT_KEYWORDS_FILE)
@@ -553,7 +543,9 @@ def post_to_rakuten_room(item_code: str, comment: str, session_b64: str) -> bool
 
 FORBIDDEN_TERMS = [
     "ランチョンマット", "クッションカバー", "サボテン", "多肉植物",
-    "トイレットペーパー", "ティッシュペーパー", "みかん", "ミカン", "蜜柑"
+    "トイレットペーパー", "ティッシュペーパー", "みかん", "ミカン", "蜜柑",
+    "リンゴ", "りんご", "林檎", "シャインマスカット", "ぶどう", "葡萄",
+    "いちご", "イチゴ", "苺", "メロン", "スイカ", "桃", "もも", "フルーツ詰め合わせ", "果物"
 ]
 
 def is_forbidden_item(title: str, caption: str = "") -> bool:
@@ -572,6 +564,11 @@ def post_single_article(rakuten_app_id: str, rakuten_access_key: str, rakuten_af
 
     # 楽天市場から商品を検索
     target_item = None
+    comparison_items = []
+    
+    # 家電系・コスメ系（暖房家電、加湿器、乾燥対策コスメ）の場合は似ているタイプの商品を4つ取得して比較記事にする
+    is_comparison_cat = selected_cat in ["heating_appliances", "humidifier", "winter_skincare"]
+    
     for attempt in range(15):
         if attempt > 0:
             time.sleep(1)
@@ -579,6 +576,7 @@ def post_single_article(rakuten_app_id: str, rakuten_access_key: str, rakuten_af
             attempted_cats.append(selected_cat)
             if len(attempted_cats) >= len(EXPANDED_CATEGORIES):
                 attempted_cats.clear()
+            is_comparison_cat = selected_cat in ["heating_appliances", "humidifier", "winter_skincare"]
         
         items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, keyword)
         if items:
@@ -587,22 +585,35 @@ def post_single_article(rakuten_app_id: str, rakuten_access_key: str, rakuten_af
                 title = item.get("title", "")
                 caption = item.get("itemCaption", "")
                 if code not in posted_cache and not is_forbidden_item(title, caption):
-                    target_item = item
-                    break
+                    if target_item is None:
+                        target_item = item
+                        if not is_comparison_cat:
+                            break
+                    elif is_comparison_cat and item not in comparison_items:
+                        comparison_items.append(item)
+                        if len(comparison_items) >= 3:
+                            break
         if target_item:
+            # おせち重複対策：もし過去におせちが投稿済みの場合はスイーツへ振替
+            if selected_cat == "famous_osechi" and target_item["itemCode"] in posted_cache:
+                print("Notice: Osechi duplicated. Redirecting to winter sweets...")
+                selected_cat = "winter_sweets"
+                keyword = random.choice(EXPANDED_CATEGORIES["winter_sweets"])
+                target_item = None
+                comparison_items = []
+                continue
             break
 
     if not target_item:
         print("Warning: Standard search limit reached. Executing emergency diverse fall-through search...")
         fallback_kws = [
-            ("kitchen_cooking", "電気ケトル 温度調節 保温"),
-            ("sweets_gift", "バスクチーズケーキ 濃厚 お取り寄せ スイーツ"),
-            ("appliances_cleaning", "サーキュレーター 静音 首振り 節電"),
-            ("gourmet_furusato", "ふるさと納税 黒毛和牛 ハンバーグ 10個以上"),
-            ("desk_gadget", "木目調 ケーブルボックス 配線隠し"),
-            ("bath_sleep_relax", "ホテル仕様 バスタオル 今治タオル 2枚組"),
-            ("furniture_storage", "北欧 木製 サイドテーブル"),
-            ("lighting_decor", "真鍮 ペンダントライト 北欧")
+            ("heating_appliances", "セラミックファンヒーター 人感センサー 速暖"),
+            ("blanket_fleece", "着る毛布 ルームウェア もこもこ メンズ レディース"),
+            ("winter_sweets", "濃厚 ガトーショコラ 熟成 チョコレートケーキ"),
+            ("bath_relax", "薬用 重炭酸 入浴剤 ギフト 疲労回復"),
+            ("humidifier", "ハイブリッド 加湿器 大容量 上部給水 静音"),
+            ("winter_skincare", "高保湿 ハンドクリーム シアバター ギフト"),
+            ("famous_osechi", "おせち 予約 2026 京都 割烹 料亭")
         ]
         for fb_cat, fb_kw in fallback_kws:
             items = fetch_rakuten_items(rakuten_app_id, rakuten_access_key, rakuten_affiliate_id, fb_kw)
@@ -621,38 +632,68 @@ def post_single_article(rakuten_app_id: str, rakuten_access_key: str, rakuten_af
 
     print(f"Target Item: {target_item['title']} (Code: {target_item['itemCode']})")
 
-    # アフィリエイトURL適用
-    affiliate_url = target_item["affiliateUrl"]
-    if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
-        prefix = "hb.afl.rakuten.co.jp/hgc/"
-        if prefix in affiliate_url:
-            parts = affiliate_url.split(prefix)
-            subparts = parts[1].split("/", 1)
-            if len(subparts) == 2:
-                affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
-
-    # 画像抽出
-    highres_images = extract_rakuten_highres_images(target_item, max_images=3)
-
-    # 記事・タイトル生成
-    title_raw = target_item["title"]
-    clean_title = article_gen.get_clean_product_name(title_raw, keyword)
-    generator_input_item = {
-        "title": target_item["title"],
-        "clean_title": clean_title,
-        "price": target_item["price"],
-        "caption": target_item["itemCaption"],
-        "search_keyword": keyword
-    }
+    cat_label = CATEGORY_NAMES.get(selected_cat, "暮らし・インテリア")
     
-    article_content = article_gen.build_full_featured_article(
-        item=generator_input_item,
-        image_urls=highres_images,
-        affiliate_url=affiliate_url
-    )
-    time.sleep(2)
-    blog_title = article_gen.generate_blog_title(generator_input_item)
-    print(f"Generated Title: {blog_title}")
+    # 暖房器具・加湿器・乾燥対策コスメで、比較用商品が揃っている場合は4商品比較形式で記事を生成
+    if is_comparison_cat and len(comparison_items) >= 3:
+        all_comp_items = [target_item] + comparison_items[:3]
+        comp_aff_urls = []
+        comp_imgs_list = []
+        for it in all_comp_items:
+            aff = it["affiliateUrl"]
+            if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
+                prefix = "hb.afl.rakuten.co.jp/hgc/"
+                if prefix in aff:
+                    parts = aff.split(prefix)
+                    subparts = parts[1].split("/", 1)
+                    if len(subparts) == 2:
+                        aff = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
+            comp_aff_urls.append(aff)
+            comp_imgs_list.append(extract_rakuten_highres_images(it, max_images=1))
+        
+        article_content = article_gen.build_comparison_article(
+            items=all_comp_items,
+            affiliate_urls=comp_aff_urls,
+            image_urls_list=comp_imgs_list,
+            category_label=cat_label
+        )
+        time.sleep(2)
+        blog_title = f"【徹底比較】冬を快適にする人気の{cat_label}おすすめ4選！"
+        print(f"Generated Comparison Title: {blog_title}")
+    else:
+        # 通常の単一商品レビュー記事
+        # アフィリエイトURL適用
+        affiliate_url = target_item["affiliateUrl"]
+        if rakuten_affiliate_id and not rakuten_affiliate_id.startswith("DUMMY"):
+            prefix = "hb.afl.rakuten.co.jp/hgc/"
+            if prefix in affiliate_url:
+                parts = affiliate_url.split(prefix)
+                subparts = parts[1].split("/", 1)
+                if len(subparts) == 2:
+                    affiliate_url = parts[0] + prefix + rakuten_affiliate_id + "/" + subparts[1]
+
+        # 画像抽出
+        highres_images = extract_rakuten_highres_images(target_item, max_images=3)
+
+        # 記事・タイトル生成
+        title_raw = target_item["title"]
+        clean_title = article_gen.get_clean_product_name(title_raw, keyword)
+        generator_input_item = {
+            "title": target_item["title"],
+            "clean_title": clean_title,
+            "price": target_item["price"],
+            "caption": target_item["itemCaption"],
+            "search_keyword": keyword
+        }
+        
+        article_content = article_gen.build_full_featured_article(
+            item=generator_input_item,
+            image_urls=highres_images,
+            affiliate_url=affiliate_url
+        )
+        time.sleep(2)
+        blog_title = article_gen.generate_blog_title(generator_input_item)
+        print(f"Generated Title: {blog_title}")
 
     # 1日23件上限チェック ＆ 下書き50件上限判定
     today_posts = get_today_post_count()
@@ -696,6 +737,12 @@ def post_single_article(rakuten_app_id: str, rakuten_access_key: str, rakuten_af
 
         save_cache(target_item["itemCode"])
         posted_cache.add(target_item["itemCode"])
+        if is_comparison_cat and comparison_items:
+            for ci in comparison_items:
+                c_code = ci.get("itemCode")
+                if c_code:
+                    save_cache(c_code)
+                    posted_cache.add(c_code)
         save_json_history(RECENT_CATEGORIES_FILE, selected_cat, max_items=5)
         save_json_history(RECENT_KEYWORDS_FILE, keyword, max_items=25)
         print(f"Updated genre rotation history: logged [{CATEGORY_NAMES.get(selected_cat, selected_cat)}]")
