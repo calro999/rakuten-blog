@@ -2992,3 +2992,7 @@ frdm:10000035
 mypita:10000279
 futon-no-doremi:10000898
 maochan:10000065
+aestura-japan:10000007
+kajewel:10018585
+129-ink:10000012
+fancl-shop:10000257
