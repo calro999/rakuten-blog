@@ -3001,3 +3001,4 @@ flaner:10024211
 arandshop:10000127
 iremono:10001165
 futon:10034133
+kazamidorihonpo:10000302
