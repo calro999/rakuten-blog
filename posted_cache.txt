@@ -3006,3 +3006,4 @@ insair:10044169
 kadenrand:10072504
 u-denki:10026027
 enetroom:10166563
+kainomahou:10001308
