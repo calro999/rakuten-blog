@@ -3032,3 +3032,4 @@ f192023-fujiyoshida:10001271
 mine-amenity:10003829
 mugigokoro:10008386
 mugigokoro:10006188
+auc-epsomsalt:10000002
