@@ -3033,3 +3033,4 @@ mine-amenity:10003829
 mugigokoro:10008386
 mugigokoro:10006188
 auc-epsomsalt:10000002
+galette-des-rois:10003331
