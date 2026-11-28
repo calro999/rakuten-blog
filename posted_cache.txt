@@ -3028,3 +3028,7 @@ a-price:10986879
 a-price:10986880
 premoa:10925162
 jonny-alive:10000368
+f192023-fujiyoshida:10001271
+mine-amenity:10003829
+mugigokoro:10008386
+mugigokoro:10006188
